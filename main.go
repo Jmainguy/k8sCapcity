@@ -32,10 +32,9 @@ func main() {
 	flag.Parse()
 
 	labelSlice := strings.Split(*nodeLabel, "=")
-	nodeLabelKey := ""
+	nodeLabelKey := labelSlice[0]
 	nodeLabelValue := ""
-	if len(labelSlice) > 0 {
-		nodeLabelKey = labelSlice[0]
+	if nodeLabelKey != "" {
 		nodeLabelValue = labelSlice[1]
 	}
 	// use the current context in kubeconfig
@@ -95,7 +94,6 @@ func main() {
 		} else {
 			fmt.Println("================")
 			fmt.Printf("Node: %s\n", v.Name)
-			fmt.Printf("Node: %s\n", v.Name)
 			cpu := v.Status.Allocatable.Cpu()
 			mem := v.Status.Allocatable.Memory()
 			pods := v.Status.Allocatable.Pods()
@@ -141,13 +139,13 @@ func main() {
 	fmt.Printf("ClusterWide Allocatable Pods: %s\n", clusterAllocatablePods)
 	fmt.Println("================")
 	cwalm := clusterAllocatedLimitsMemory.ScaledValue(resource.Giga)
-	fmt.Printf("ClusterWide Allocated Limits.Memory: %s (%dGB)\n", clusterAllocatedLimitsMemory, cwalm)
-	fmt.Printf("ClusterWide Allocated Limits.CPU: %d\n", clusterAllocatedLimitsCPU.AsDec())
-	fmt.Printf("ClusterWide Allocated Pods: %d\n", clusterAllocatedPods.AsDec())
+	fmt.Printf("ResourceQuota ClusterWide Allocated Limits.Memory: %s (%dGB)\n", clusterAllocatedLimitsMemory, cwalm)
+	fmt.Printf("ResourceQuota ClusterWide Allocated Limits.CPU: %d\n", clusterAllocatedLimitsCPU.AsDec())
+	fmt.Printf("ResourceQuota ClusterWide Allocated Pods: %d\n", clusterAllocatedPods.AsDec())
 	fmt.Println("================")
 	cwarm := clusterAllocatedRequestsMemory.ScaledValue(resource.Giga)
-	fmt.Printf("ClusterWide Allocated Requests.Memory: %s (%dGB)\n", clusterAllocatedRequestsMemory, cwarm)
-	fmt.Printf("ClusterWide Allocated Requests.CPU: %d\n", clusterAllocatedRequestsCPU.AsDec())
+	fmt.Printf("ResourceQuota ClusterWide Allocated Requests.Memory: %s (%dGB)\n", clusterAllocatedRequestsMemory, cwarm)
+	fmt.Printf("ResourceQuota ClusterWide Allocated Requests.CPU: %d\n", clusterAllocatedRequestsCPU.AsDec())
 
 }
 
