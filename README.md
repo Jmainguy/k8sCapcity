@@ -14,3 +14,7 @@ Login to your kubernetes cluster, then run
 ```/bin/bash
 ./k8sCapcity
 ```
+-nodelabel flag allows you to select on only the nodes you care about
+```/bin/bash
+./k8sCapcity -nodelabel node-role.kubernetes.io/compute=true
+```

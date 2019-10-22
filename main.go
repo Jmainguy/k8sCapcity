@@ -13,6 +13,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	//"reflect"
 	corev1 "k8s.io/api/core/v1"
+	"strings"
 )
 
 func main() {
@@ -27,8 +28,16 @@ func main() {
 	} else {
 		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
 	}
+	nodeLabel := flag.String("nodelabel", "", "Label to match for nodes, if blank grab all nodes")
 	flag.Parse()
 
+	labelSlice := strings.Split(*nodeLabel, "=")
+	nodeLabelKey := ""
+	nodeLabelValue := ""
+	if len(labelSlice) > 0 {
+		nodeLabelKey = labelSlice[0]
+		nodeLabelValue = labelSlice[1]
+	}
 	// use the current context in kubeconfig
 	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
 	if err != nil {
@@ -48,28 +57,57 @@ func main() {
 	clusterAllocatableMemory := &resource.Quantity{}
 	clusterAllocatableCPU := &resource.Quantity{}
 	clusterAllocatablePods := &resource.Quantity{}
-	fmt.Printf("There are %d nodes in this cluster\n", len(nodes.Items))
-	for _, v := range nodes.Items {
-		fmt.Println("================")
-		fmt.Printf("Node: %s\n", v.Name)
-		cpu := v.Status.Allocatable.Cpu()
-		mem := v.Status.Allocatable.Memory()
-		pods := v.Status.Allocatable.Pods()
-		am := mem.ScaledValue(resource.Giga)
-		fmt.Printf("Allocatable CPU: %s\n", cpu)
-		fmt.Printf("Allocatable Memory: %s (%dGB)\n", mem, am)
-		fmt.Printf("Allocatable Pods: %s\n", pods)
-
-		// If label matches, add it up
-		for label, value := range v.ObjectMeta.Labels {
-			if label == "region" {
-				if value == "primary" {
-					clusterAllocatableMemory.Add(*mem)
-					clusterAllocatableCPU.Add(*cpu)
-					clusterAllocatablePods.Add(*pods)
+	var nodesWeCareAbout []string
+	if nodeLabelKey != "" {
+		for _, v := range nodes.Items {
+			for label, value := range v.ObjectMeta.Labels {
+				if label == nodeLabelKey {
+					if value == nodeLabelValue {
+						nodesWeCareAbout = append(nodesWeCareAbout, v.Name)
+					}
 				}
 			}
 		}
+		fmt.Printf("There are %d nodes in this cluster\n", len(nodesWeCareAbout))
+	} else {
+		fmt.Printf("There are %d nodes in this cluster\n", len(nodes.Items))
+	}
+	for _, v := range nodes.Items {
+		if nodeLabelKey != "" {
+			for label, value := range v.ObjectMeta.Labels {
+				if label == nodeLabelKey {
+					if value == nodeLabelValue {
+						fmt.Println("================")
+						fmt.Printf("Node: %s\n", v.Name)
+						cpu := v.Status.Allocatable.Cpu()
+						mem := v.Status.Allocatable.Memory()
+						pods := v.Status.Allocatable.Pods()
+						am := mem.ScaledValue(resource.Giga)
+						fmt.Printf("Allocatable CPU: %s\n", cpu)
+						fmt.Printf("Allocatable Memory: %s (%dGB)\n", mem, am)
+						fmt.Printf("Allocatable Pods: %s\n", pods)
+						clusterAllocatableMemory.Add(*mem)
+						clusterAllocatableCPU.Add(*cpu)
+						clusterAllocatablePods.Add(*pods)
+					}
+				}
+			}
+		} else {
+			fmt.Println("================")
+			fmt.Printf("Node: %s\n", v.Name)
+			fmt.Printf("Node: %s\n", v.Name)
+			cpu := v.Status.Allocatable.Cpu()
+			mem := v.Status.Allocatable.Memory()
+			pods := v.Status.Allocatable.Pods()
+			am := mem.ScaledValue(resource.Giga)
+			fmt.Printf("Allocatable CPU: %s\n", cpu)
+			fmt.Printf("Allocatable Memory: %s (%dGB)\n", mem, am)
+			fmt.Printf("Allocatable Pods: %s\n", pods)
+			clusterAllocatableMemory.Add(*mem)
+			clusterAllocatableCPU.Add(*cpu)
+			clusterAllocatablePods.Add(*pods)
+		}
+
 	}
 
 	// List quotas
