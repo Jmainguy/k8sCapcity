@@ -7,15 +7,16 @@ addons:
     # needed for the nfpm pipe:
     - rpm
     # needed for the snap pipe:
-    - snapd
+    #- snapd
 
 env:
 # needed for the snap pipe:
-- PATH=/snap/bin:$PATH GO111MODULE="on"
+#- PATH=/snap/bin:$PATH GO111MODULE="on"
+- GO111MODULE="on"
 
 install:
 # needed for the snap pipe:
-- sudo snap install snapcraft --classic
+#- sudo snap install snapcraft --classic
 
 # needed for the docker pipe
 #services:
