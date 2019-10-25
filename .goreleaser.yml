@@ -5,12 +5,16 @@ env:
 before:
   hooks:
     # you may remove this if you don't use vgo
-    #- go mod tidy
+    - go mod tidy
     # you may remove this if you don't need go generate
     #- go generate ./...
 builds:
 - env:
   - CGO_ENABLED=0
+  goos:
+    - linux
+    - darwin
+    - windows
   goarch:
     - amd64
 archives:
@@ -29,3 +33,5 @@ changelog:
     exclude:
     - '^docs:'
     - '^test:'
+binaries:
+  - k8sCapCity
