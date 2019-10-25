@@ -1,43 +1,19 @@
-# .travis.yml
 language: go
-
 addons:
   apt:
     packages:
-    # needed for the nfpm pipe:
     - rpm
-    # needed for the snap pipe:
-    #- snapd
-
 env:
-# needed for the snap pipe:
-#- PATH=/snap/bin:$PATH GO111MODULE="on"
-- GO111MODULE="on"
-
-install:
-# needed for the snap pipe:
-#- sudo snap install snapcraft --classic
-
-# needed for the docker pipe
-#services:
-#- docker
-
-after_success:
-# docker login is required if you want to push docker images.
-# DOCKER_PASSWORD should be a secret in your .travis.yml configuration.
-#- test -n "$TRAVIS_TAG" && docker login -u=myuser -p="$DOCKER_PASSWORD"
-# snapcraft login is required if you want to push snapcraft packages to the
-# store.
-# You'll need to run `snapcraft export-login snap.login` and
-# `travis encrypt-file snap.login --add` to add the key to the travis
-# environment.
-#- test -n "$TRAVIS_TAG" && snapcraft login --with snap.login
-
-# calls goreleaser
+  matrix:
+  - GO111MODULE="on"
+  global:
+    secure: mLWEfPdleOiqQuGVhQRM/cSJ2I7N3/oFUJgKjsPgR0TaZ5Q8jEK2p/K/HsAMAscNCQQHZBlvpjhG2+9K1nCNS/9po9vrzy8mFDXepqYuI4yH2qPnoz00yU2crPSzjPHuZd8l/NW9i3FKfVO/5xQtNI8CXjck8oaK9vLPZ3O8y2s50Cd3szH7m9EdnzeSaOz4d5wrn7XKRdpG5yMPj9J0ZRdY9CPAa8L09WMrOEp96ZTRdRiShwOXO3FZ1wz0jI4No3taWb/q91SVdTOvJVTV6dnhMICjmrUwzvQEVxPWmXib1h9SnP7Zl6d2JqDY8E/mAZKP1ILWcODG/+vxVjYtf8Zblu/KDuP9MZhfGwIUg0PcMKUaFipH5JhNtXSdfBC3Dr3kzY0NjqsFIn2w6UTOlcNuZIBoWTcIOjCQIYL3NdMVkD09ygXEpFxHolu9DRsfBkaz6Se5TWiWipB3vA1EzFAAyjuGTKVP7FEiNPKN5Ltidp5xzOkyHOMq/dHUF3REo98pEqNwWK6pZl3gylRWedMuPraQxuFQOSfqyA/MBLJC1A9Aw1UjBFBzcS1ILXTwWb+D2CJOKI3ZKUttg6hm4Ydr6yaQPc7G/swqPlOCgo0YWmrg9t12IizetxxGwgn3sFtDjN0xNienFY99q1KHid8CJT/khFbmh0ymV9W970s=
+install: 
+after_success: 
 deploy:
 - provider: script
   skip_cleanup: true
   script: curl -sL https://git.io/goreleaser | bash
   on:
     tags: true
-    condition: $TRAVIS_OS_NAME = linux
+    condition: "$TRAVIS_OS_NAME = linux"
