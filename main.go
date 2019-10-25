@@ -6,15 +6,28 @@ import (
 	"os"
 	"path/filepath"
 
+	"encoding/json"
 	log "github.com/sirupsen/logrus"
+	corev1 "k8s.io/api/core/v1"
 	resource "k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
-	//"reflect"
-	corev1 "k8s.io/api/core/v1"
+	metricsv1b1 "k8s.io/metrics/pkg/apis/metrics/v1beta1"
 	"strings"
 )
+
+func getNodeMetrics(clientset *kubernetes.Clientset) (nodeMetricList *metricsv1b1.NodeMetricsList) {
+	//data, err := clientset.RESTClient().Get().AbsPath("apis/metrics.k8s.io/v1beta1/nodes").Do()
+	data, err := clientset.RESTClient().Get().AbsPath("apis/metrics.k8s.io/v1beta1/nodes").DoRaw()
+	if err != nil {
+		panic(err)
+	}
+	if err := json.Unmarshal(data, &nodeMetricList); err != nil {
+		panic(err)
+	}
+	return nodeMetricList
+}
 
 func main() {
 	// Log as JSON instead of the default ASCII formatter.
@@ -31,6 +44,7 @@ func main() {
 	nodeLabel := flag.String("nodelabel", "", "Label to match for nodes, if blank grab all nodes")
 	flag.Parse()
 
+	nodeInfo := make(map[string]NodeInfo)
 	labelSlice := strings.Split(*nodeLabel, "=")
 	nodeLabelKey := labelSlice[0]
 	nodeLabelValue := ""
@@ -56,54 +70,41 @@ func main() {
 	clusterAllocatableMemory := &resource.Quantity{}
 	clusterAllocatableCPU := &resource.Quantity{}
 	clusterAllocatablePods := &resource.Quantity{}
-	var nodesWeCareAbout []string
 	if nodeLabelKey != "" {
 		for _, v := range nodes.Items {
 			for label, value := range v.ObjectMeta.Labels {
 				if label == nodeLabelKey {
 					if value == nodeLabelValue {
-						nodesWeCareAbout = append(nodesWeCareAbout, v.Name)
+						node := nodeInfo[v.Name]
+						node.PrintOutput = true
+						nodeInfo[v.Name] = node
 					}
 				}
 			}
 		}
-		fmt.Printf("There are %d nodes in this cluster\n", len(nodesWeCareAbout))
 	} else {
-		fmt.Printf("There are %d nodes in this cluster\n", len(nodes.Items))
+		for _, v := range nodes.Items {
+			node := nodeInfo[v.Name]
+			node.PrintOutput = true
+			nodeInfo[v.Name] = node
+		}
 	}
+
+	fmt.Printf("There are %d nodes in this cluster\n", len(nodeInfo))
+
 	for _, v := range nodes.Items {
-		if nodeLabelKey != "" {
-			for label, value := range v.ObjectMeta.Labels {
-				if label == nodeLabelKey {
-					if value == nodeLabelValue {
-						fmt.Println("================")
-						fmt.Printf("Node: %s\n", v.Name)
-						cpu := v.Status.Allocatable.Cpu()
-						mem := v.Status.Allocatable.Memory()
-						pods := v.Status.Allocatable.Pods()
-						am := mem.ScaledValue(resource.Giga)
-						fmt.Printf("Allocatable CPU: %s\n", cpu)
-						fmt.Printf("Allocatable Memory: %s (%dGB)\n", mem, am)
-						fmt.Printf("Allocatable Pods: %s\n", pods)
-						clusterAllocatableMemory.Add(*mem)
-						clusterAllocatableCPU.Add(*cpu)
-						clusterAllocatablePods.Add(*pods)
-					}
-				}
-			}
-		} else {
-			fmt.Println("================")
-			fmt.Printf("Node: %s\n", v.Name)
+		if nodeInfo[v.Name].PrintOutput == true {
 			cpu := v.Status.Allocatable.Cpu()
 			mem := v.Status.Allocatable.Memory()
 			pods := v.Status.Allocatable.Pods()
-			am := mem.ScaledValue(resource.Giga)
-			fmt.Printf("Allocatable CPU: %s\n", cpu)
-			fmt.Printf("Allocatable Memory: %s (%dGB)\n", mem, am)
-			fmt.Printf("Allocatable Pods: %s\n", pods)
 			clusterAllocatableMemory.Add(*mem)
 			clusterAllocatableCPU.Add(*cpu)
 			clusterAllocatablePods.Add(*pods)
+			node := nodeInfo[v.Name]
+			node.AllocatableCPU = *v.Status.Allocatable.Cpu()
+			node.AllocatableMemory = *v.Status.Allocatable.Memory()
+			node.AllocatablePods = *v.Status.Allocatable.Pods()
+			nodeInfo[v.Name] = node
 		}
 
 	}
@@ -113,11 +114,11 @@ func main() {
 	if err != nil {
 		panic(err.Error())
 	}
-	clusterAllocatedLimitsMemory := &resource.Quantity{}
-	clusterAllocatedLimitsCPU := &resource.Quantity{}
-	clusterAllocatedPods := &resource.Quantity{}
-	clusterAllocatedRequestsMemory := &resource.Quantity{}
-	clusterAllocatedRequestsCPU := &resource.Quantity{}
+	rqclusterAllocatedLimitsMemory := &resource.Quantity{}
+	rqclusterAllocatedLimitsCPU := &resource.Quantity{}
+	rqclusterAllocatedPods := &resource.Quantity{}
+	rqclusterAllocatedRequestsMemory := &resource.Quantity{}
+	rqclusterAllocatedRequestsCPU := &resource.Quantity{}
 	// Add all the quotas up
 	for _, v := range quotas.Items {
 		limitmem := v.Spec.Hard[corev1.ResourceLimitsMemory]
@@ -125,11 +126,11 @@ func main() {
 		requestmem := v.Spec.Hard[corev1.ResourceRequestsMemory]
 		requestcpu := v.Spec.Hard[corev1.ResourceRequestsCPU]
 		pods := v.Spec.Hard[corev1.ResourcePods]
-		clusterAllocatedLimitsMemory.Add(limitmem)
-		clusterAllocatedLimitsCPU.Add(limitcpu)
-		clusterAllocatedPods.Add(pods)
-		clusterAllocatedRequestsMemory.Add(requestmem)
-		clusterAllocatedRequestsCPU.Add(requestcpu)
+		rqclusterAllocatedLimitsMemory.Add(limitmem)
+		rqclusterAllocatedLimitsCPU.Add(limitcpu)
+		rqclusterAllocatedPods.Add(pods)
+		rqclusterAllocatedRequestsMemory.Add(requestmem)
+		rqclusterAllocatedRequestsCPU.Add(requestcpu)
 	}
 
 	fmt.Println("================")
@@ -138,14 +139,78 @@ func main() {
 	fmt.Printf("ClusterWide Allocatable CPU: %s\n", clusterAllocatableCPU)
 	fmt.Printf("ClusterWide Allocatable Pods: %s\n", clusterAllocatablePods)
 	fmt.Println("================")
-	cwalm := clusterAllocatedLimitsMemory.ScaledValue(resource.Giga)
-	fmt.Printf("ResourceQuota ClusterWide Allocated Limits.Memory: %s (%dGB)\n", clusterAllocatedLimitsMemory, cwalm)
-	fmt.Printf("ResourceQuota ClusterWide Allocated Limits.CPU: %d\n", clusterAllocatedLimitsCPU.AsDec())
-	fmt.Printf("ResourceQuota ClusterWide Allocated Pods: %d\n", clusterAllocatedPods.AsDec())
+	rqcwalm := rqclusterAllocatedLimitsMemory.ScaledValue(resource.Giga)
+	fmt.Printf("ResourceQuota ClusterWide Allocated Limits.Memory: %s (%dGB)\n", rqclusterAllocatedLimitsMemory, rqcwalm)
+	fmt.Printf("ResourceQuota ClusterWide Allocated Limits.CPU: %d\n", rqclusterAllocatedLimitsCPU.AsDec())
+	fmt.Printf("ResourceQuota ClusterWide Allocated Pods: %d\n", rqclusterAllocatedPods.AsDec())
 	fmt.Println("================")
-	cwarm := clusterAllocatedRequestsMemory.ScaledValue(resource.Giga)
-	fmt.Printf("ResourceQuota ClusterWide Allocated Requests.Memory: %s (%dGB)\n", clusterAllocatedRequestsMemory, cwarm)
-	fmt.Printf("ResourceQuota ClusterWide Allocated Requests.CPU: %d\n", clusterAllocatedRequestsCPU.AsDec())
+	rqcwarm := rqclusterAllocatedRequestsMemory.ScaledValue(resource.Giga)
+	fmt.Printf("ResourceQuota ClusterWide Allocated Requests.Memory: %s (%dGB)\n", rqclusterAllocatedRequestsMemory, rqcwarm)
+	fmt.Printf("ResourceQuota ClusterWide Allocated Requests.CPU: %d\n", rqclusterAllocatedRequestsCPU.AsDec())
+
+	nodeMetricList := getNodeMetrics(clientset)
+	for _, metricNode := range nodeMetricList.Items {
+		cpuUsed := metricNode.Usage.Cpu()
+		memUsed := metricNode.Usage.Memory()
+		node := nodeInfo[metricNode.Name]
+		node.UsedCPU = *cpuUsed
+		node.UsedMemory = *memUsed
+		nodeInfo[metricNode.Name] = node
+	}
+
+	pods, err := clientset.CoreV1().Pods("").List(metav1.ListOptions{})
+	for _, pod := range pods.Items {
+		node := nodeInfo[pod.Spec.NodeName]
+		if pod.Status.Phase != "Failed" {
+			if pod.Status.Phase != "Succeeded" {
+				for _, container := range pod.Spec.Containers {
+					crrm := container.Resources.Requests.Memory()
+					crrc := container.Resources.Requests.Cpu()
+					UsedMemRequests := &resource.Quantity{}
+					UsedCPURequests := &resource.Quantity{}
+					UsedMemRequests.Add(node.UsedMemoryRequests)
+					UsedMemRequests.Add(*crrm)
+					UsedCPURequests.Add(node.UsedCPURequests)
+					UsedCPURequests.Add(*crrc)
+					node.UsedMemoryRequests = *UsedMemRequests
+					node.UsedCPURequests = *UsedCPURequests
+				}
+				node.UsedPods += 1
+			}
+		}
+		nodeInfo[pod.Spec.NodeName] = node
+	}
+	for node, info := range nodeInfo {
+		if info.PrintOutput == true {
+			fmt.Println("================")
+			fmt.Printf("NodeName: %s\n", node)
+			fmt.Printf("Allocatable CPU: %s\n", &info.AllocatableCPU)
+			fmt.Printf("Allocatable Memory: %s (%dGB)\n", &info.AllocatableMemory, info.AllocatableMemory.ScaledValue(resource.Giga))
+			fmt.Printf("Allocatable Pods: %s\n", &info.AllocatablePods)
+			fmt.Println("----------------")
+			fmt.Printf("Used CPU: %s\n", &info.UsedCPU)
+			fmt.Printf("Used Memory: %s (%dGB)\n", &info.UsedMemory, info.UsedMemory.ScaledValue(resource.Giga))
+			fmt.Printf("Used Pods: %d\n", info.UsedPods)
+			fmt.Printf("Used CPU Requests: %s\n", &info.UsedCPURequests)
+			fmt.Printf("Used Memory Requests: %s (%dGB)\n", &info.UsedMemoryRequests, info.UsedMemoryRequests.ScaledValue(resource.Giga))
+			fmt.Println("----------------")
+
+			AvailbleCPURequests := &resource.Quantity{}
+			AvailableMemoryRequests := &resource.Quantity{}
+
+			AvailbleCPURequests = &info.AllocatableCPU
+			AvailbleCPURequests.Sub(info.UsedCPURequests)
+			fmt.Printf("Available CPU Requests: %s\n", AvailbleCPURequests)
+
+			AvailableMemoryRequests = &info.AllocatableMemory
+			AvailableMemoryRequests.Sub(info.UsedMemoryRequests)
+			fmt.Printf("Available Memory Requests: %s (%dGB)\n", AvailableMemoryRequests, AvailableMemoryRequests.ScaledValue(resource.Giga))
+
+			AvailablePods, _ := info.AllocatablePods.AsInt64()
+			AvailablePods = AvailablePods - info.UsedPods
+			fmt.Printf("Available Pods: %d\n", AvailablePods)
+		}
+	}
 
 }
 
