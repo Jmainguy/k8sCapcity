@@ -18,7 +18,6 @@ import (
 )
 
 func getNodeMetrics(clientset *kubernetes.Clientset) (nodeMetricList *metricsv1b1.NodeMetricsList) {
-	//data, err := clientset.RESTClient().Get().AbsPath("apis/metrics.k8s.io/v1beta1/nodes").Do()
 	data, err := clientset.RESTClient().Get().AbsPath("apis/metrics.k8s.io/v1beta1/nodes").DoRaw()
 	if err != nil {
 		panic(err)
@@ -27,6 +26,17 @@ func getNodeMetrics(clientset *kubernetes.Clientset) (nodeMetricList *metricsv1b
 		panic(err)
 	}
 	return nodeMetricList
+}
+
+func getPodMetrics(clientset *kubernetes.Clientset) (podMetricList *metricsv1b1.PodMetricsList) {
+	data, err := clientset.RESTClient().Get().AbsPath("apis/metrics.k8s.io/v1beta1/pods").DoRaw()
+	if err != nil {
+		panic(err)
+	}
+	if err := json.Unmarshal(data, &podMetricList); err != nil {
+		panic(err)
+	}
+	return podMetricList
 }
 
 func main() {
@@ -42,9 +52,11 @@ func main() {
 		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
 	}
 	nodeLabel := flag.String("nodelabel", "", "Label to match for nodes, if blank grab all nodes")
+	nameSpace := flag.String("namespace", "", "Namespace to grab capacity usage from")
 	flag.Parse()
 
 	nodeInfo := make(map[string]NodeInfo)
+	containerInfo := make(map[string]ContainerInfo)
 	labelSlice := strings.Split(*nodeLabel, "=")
 	nodeLabelKey := labelSlice[0]
 	nodeLabelValue := ""
@@ -62,6 +74,55 @@ func main() {
 	if err != nil {
 		panic(err.Error())
 	}
+	if *nameSpace != "" {
+		podMetricList := getPodMetrics(clientset)
+		for _, metricPod := range podMetricList.Items {
+			if *nameSpace == metricPod.Namespace {
+				pods, err := clientset.CoreV1().Pods(*nameSpace).List(metav1.ListOptions{})
+				if err != nil {
+					panic(err.Error())
+				}
+				for _, pod := range pods.Items {
+					for _, container := range pod.Spec.Containers {
+						containerStats := containerInfo[container.Name]
+						crrm := container.Resources.Requests.Memory()
+						crrc := container.Resources.Requests.Cpu()
+						crlm := container.Resources.Limits.Memory()
+						crlc := container.Resources.Limits.Cpu()
+						containerStats.MemoryRequests = *crrm
+						containerStats.MemoryLimits = *crlm
+						containerStats.CPURequests = *crrc
+						containerStats.CPULimits = *crlc
+						containerInfo[container.Name] = containerStats
+					}
+				}
+
+				fmt.Println("")
+				fmt.Println("================")
+				fmt.Printf("****Pod Name: %s****\n", metricPod.Name)
+				for _, container := range metricPod.Containers {
+					containerStats := containerInfo[container.Name]
+					containerStats.UsedMemory = *container.Usage.Memory()
+					containerStats.UsedCPU = *container.Usage.Cpu()
+					containerInfo[container.Name] = containerStats
+				}
+				for key, container := range containerInfo {
+					fmt.Println("================")
+					fmt.Printf("Container Name: %s\n", key)
+					fmt.Println("----------------")
+					fmt.Printf("CPURequests: %s\n", &container.CPURequests)
+					fmt.Printf("MemoryRequests: %s\n", &container.MemoryRequests)
+					fmt.Printf("CPULimits: %s\n", &container.CPULimits)
+					fmt.Printf("MemoryLimits: %s\n", &container.MemoryLimits)
+					fmt.Println("----------------")
+					fmt.Printf("Used CPU: %s\n", &container.UsedCPU)
+					fmt.Printf("Used Memory: %s (%dMB)\n", &container.UsedMemory, container.UsedMemory.ScaledValue(resource.Mega))
+				}
+			}
+		}
+		os.Exit(0)
+	}
+
 	// List all nodes
 	nodes, err := clientset.CoreV1().Nodes().List(metav1.ListOptions{})
 	if err != nil {

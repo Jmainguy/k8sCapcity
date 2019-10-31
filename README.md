@@ -10,6 +10,10 @@ Login to your kubernetes cluster, then run
 ```/bin/bash
 ./k8sCapcity -nodelabel node-role.kubernetes.io/compute=true
 ```
+-namespace flag allows you to focus on a single namespaces usage
+```/bin/bash
+./k8sCapcity -namespace "aebot"
+```
 
 ## Sample output
 ```/bin/bash
@@ -40,6 +44,24 @@ Used Memory Requests: 116567542016 (117GB)
 Available CPU Requests: 8490m
 Available Memory Requests: 422555809536 (423GB)
 Available Pods: 25
+```
+
+## Sample output of just a namespace
+```/bin/bash
+./k8sCapcity -namespace "aebot"
+
+================
+****Pod Name: aebot-65-c4zbf****
+================
+Container Name: aebot
+----------------
+CPURequests: 100m
+MemoryRequests: 50Mi
+CPULimits: 100m
+MemoryLimits: 50Mi
+----------------
+Used CPU: 0
+Used Memory: 15452Ki (16MB)
 ```
 
 ## PreBuilt Binaries
