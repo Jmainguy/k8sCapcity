@@ -28,7 +28,9 @@ archives:
   - goos: windows
     format: zip
 nfpms:
-- name_template: "{{ .ProjectName }}-{{ .Version }}.{{ .Os }}.{{ .Arch }}"
+- name_template: "{{ .ProjectName }}-{{ .Version }}.{{ .Arch }}"
+  replacements:
+    amd64: x86_64
   homepage:  https://soh.re
   description: Gather kubernetes capacity information
   maintainer: Jonathan Seth Mainguy <jon@soh.re>
