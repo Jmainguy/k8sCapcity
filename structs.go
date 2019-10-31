@@ -15,3 +15,12 @@ type NodeInfo struct {
 	UsedCPURequests    resource.Quantity
 	PrintOutput        bool
 }
+
+type ContainerInfo struct {
+	CPURequests    resource.Quantity
+	CPULimits      resource.Quantity
+	MemoryRequests resource.Quantity
+	MemoryLimits   resource.Quantity
+	UsedCPU        resource.Quantity
+	UsedMemory     resource.Quantity
+}
