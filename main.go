@@ -83,17 +83,21 @@ func main() {
 					panic(err.Error())
 				}
 				for _, pod := range pods.Items {
-					for _, container := range pod.Spec.Containers {
-						containerStats := containerInfo[container.Name]
-						crrm := container.Resources.Requests.Memory()
-						crrc := container.Resources.Requests.Cpu()
-						crlm := container.Resources.Limits.Memory()
-						crlc := container.Resources.Limits.Cpu()
-						containerStats.MemoryRequests = *crrm
-						containerStats.MemoryLimits = *crlm
-						containerStats.CPURequests = *crrc
-						containerStats.CPULimits = *crlc
-						containerInfo[container.Name] = containerStats
+					if pod.Status.Phase != "Failed" {
+						if pod.Status.Phase != "Succeeded" {
+							for _, container := range pod.Spec.Containers {
+								containerStats := containerInfo[container.Name]
+								crrm := container.Resources.Requests.Memory()
+								crrc := container.Resources.Requests.Cpu()
+								crlm := container.Resources.Limits.Memory()
+								crlc := container.Resources.Limits.Cpu()
+								containerStats.MemoryRequests = *crrm
+								containerStats.MemoryLimits = *crlm
+								containerStats.CPURequests = *crrc
+								containerStats.CPULimits = *crlc
+								containerInfo[container.Name] = containerStats
+							}
+						}
 					}
 				}
 
