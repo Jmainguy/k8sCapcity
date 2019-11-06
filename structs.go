@@ -17,6 +17,8 @@ type NodeInfo struct {
 }
 
 type ContainerInfo struct {
+	Name           string
+	Pod            string
 	CPURequests    resource.Quantity
 	CPULimits      resource.Quantity
 	MemoryRequests resource.Quantity
