@@ -75,6 +75,13 @@ func main() {
 		panic(err.Error())
 	}
 	if *nameSpace != "" {
+		namespaceMemoryLimits := &resource.Quantity{}
+		namespaceMemoryRequests := &resource.Quantity{}
+		namespaceMemoryUsed := &resource.Quantity{}
+		namespaceCPULimits := &resource.Quantity{}
+		namespaceCPURequests := &resource.Quantity{}
+		namespaceCPUUsed := &resource.Quantity{}
+
 		podMetricList := getPodMetrics(clientset)
 		for _, metricPod := range podMetricList.Items {
 			if *nameSpace == metricPod.Namespace {
@@ -100,6 +107,11 @@ func main() {
 									containerStats.Name = container.Name
 									containerStats.Pod = pod.Name
 									containerInfo[uniqueContainerName] = containerStats
+									// Add up for the namespace
+									namespaceMemoryLimits.Add(*crlm)
+									namespaceMemoryRequests.Add(*crrm)
+									namespaceCPULimits.Add(*crlc)
+									namespaceCPURequests.Add(*crrc)
 								}
 							}
 						}
@@ -115,6 +127,9 @@ func main() {
 					containerStats.UsedMemory = *container.Usage.Memory()
 					containerStats.UsedCPU = *container.Usage.Cpu()
 					containerInfo[uniqueContainerName] = containerStats
+					// Add up for the namespace
+					namespaceMemoryUsed.Add(*container.Usage.Memory())
+					namespaceCPUUsed.Add(*container.Usage.Cpu())
 				}
 				for _, container := range containerInfo {
 					if metricPod.Name == container.Pod {
@@ -132,6 +147,16 @@ func main() {
 				}
 			}
 		}
+		fmt.Printf("<><><><><>Sum Total for Namespace: %s<><><><><>\n", *nameSpace)
+		fmt.Println("----------------")
+		fmt.Printf("Namespace Total CPURequests: %s\n", namespaceCPURequests)
+		fmt.Printf("Namespace Total MemoryRequests: %s\n", namespaceMemoryRequests)
+		fmt.Printf("Namespace Total CPULimits: %s\n", namespaceCPULimits)
+		fmt.Printf("Namespace Total MemoryLimits: %s\n", namespaceMemoryLimits)
+		fmt.Println("----------------")
+		fmt.Printf("Namespace Total Used CPU: %s\n", namespaceCPUUsed)
+		fmt.Printf("Namespace Total Used Memory: %s (%dMB)\n", namespaceMemoryUsed, namespaceMemoryUsed.ScaledValue(resource.Mega))
+
 		os.Exit(0)
 	}
 
