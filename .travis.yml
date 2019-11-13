@@ -17,3 +17,5 @@ deploy:
   on:
     tags: true
     condition: "$TRAVIS_OS_NAME = linux"
+after_deploy:
+  - ./after_deploy.sh
