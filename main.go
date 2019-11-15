@@ -231,21 +231,6 @@ func main() {
 		rqclusterAllocatedRequestsCPU.Add(requestcpu)
 	}
 
-	fmt.Println("================")
-	cwam := clusterAllocatableMemory.ScaledValue(resource.Giga)
-	fmt.Printf("ClusterWide Allocatable Memory: %s (%dGB)\n", clusterAllocatableMemory, cwam)
-	fmt.Printf("ClusterWide Allocatable CPU: %s\n", clusterAllocatableCPU)
-	fmt.Printf("ClusterWide Allocatable Pods: %s\n", clusterAllocatablePods)
-	fmt.Println("================")
-	rqcwalm := rqclusterAllocatedLimitsMemory.ScaledValue(resource.Giga)
-	fmt.Printf("ResourceQuota ClusterWide Allocated Limits.Memory: %s (%dGB)\n", rqclusterAllocatedLimitsMemory, rqcwalm)
-	fmt.Printf("ResourceQuota ClusterWide Allocated Limits.CPU: %d\n", rqclusterAllocatedLimitsCPU.AsDec())
-	fmt.Printf("ResourceQuota ClusterWide Allocated Pods: %d\n", rqclusterAllocatedPods.AsDec())
-	fmt.Println("================")
-	rqcwarm := rqclusterAllocatedRequestsMemory.ScaledValue(resource.Giga)
-	fmt.Printf("ResourceQuota ClusterWide Allocated Requests.Memory: %s (%dGB)\n", rqclusterAllocatedRequestsMemory, rqcwarm)
-	fmt.Printf("ResourceQuota ClusterWide Allocated Requests.CPU: %d\n", rqclusterAllocatedRequestsCPU.AsDec())
-
 	nodeMetricList := getNodeMetrics(clientset)
 	for _, metricNode := range nodeMetricList.Items {
 		cpuUsed := metricNode.Usage.Cpu()
@@ -278,6 +263,12 @@ func main() {
 		}
 		nodeInfo[pod.Spec.NodeName] = node
 	}
+
+	clusterUsedCPURequests := &resource.Quantity{}
+	clusterUsedCPU := &resource.Quantity{}
+	clusterUsedMemory := &resource.Quantity{}
+	clusterUsedMemoryRequests := &resource.Quantity{}
+	var clusterUsedPods int64
 	for node, info := range nodeInfo {
 		if info.PrintOutput == true {
 			fmt.Println("================")
@@ -307,8 +298,34 @@ func main() {
 			AvailablePods, _ := info.AllocatablePods.AsInt64()
 			AvailablePods = AvailablePods - info.UsedPods
 			fmt.Printf("Available Pods: %d\n", AvailablePods)
+			// Add to cluster total
+			clusterUsedCPURequests.Add(info.UsedCPURequests)
+			clusterUsedCPU.Add(info.UsedCPU)
+			clusterUsedMemoryRequests.Add(info.UsedMemoryRequests)
+			clusterUsedMemory.Add(info.UsedMemory)
+			clusterUsedPods = clusterUsedPods + info.UsedPods
 		}
 	}
+	fmt.Println("================")
+	cwam := clusterAllocatableMemory.ScaledValue(resource.Giga)
+	fmt.Printf("ClusterWide Allocatable Memory: %s (%dGB)\n", clusterAllocatableMemory, cwam)
+	fmt.Printf("ClusterWide Allocatable CPU: %s\n", clusterAllocatableCPU)
+	fmt.Printf("ClusterWide Allocatable Pods: %s\n", clusterAllocatablePods)
+	fmt.Println("================")
+	rqcwalm := rqclusterAllocatedLimitsMemory.ScaledValue(resource.Giga)
+	fmt.Printf("ResourceQuota ClusterWide Allocated Limits.Memory: %s (%dGB)\n", rqclusterAllocatedLimitsMemory, rqcwalm)
+	fmt.Printf("ResourceQuota ClusterWide Allocated Limits.CPU: %d\n", rqclusterAllocatedLimitsCPU.AsDec())
+	fmt.Printf("ResourceQuota ClusterWide Allocated Pods: %d\n", rqclusterAllocatedPods.AsDec())
+	fmt.Println("================")
+	rqcwarm := rqclusterAllocatedRequestsMemory.ScaledValue(resource.Giga)
+	fmt.Printf("ResourceQuota ClusterWide Allocated Requests.Memory: %s (%dGB)\n", rqclusterAllocatedRequestsMemory, rqcwarm)
+	fmt.Printf("ResourceQuota ClusterWide Allocated Requests.CPU: %d\n", rqclusterAllocatedRequestsCPU.AsDec())
+	fmt.Println("----------------")
+	fmt.Printf("ClusterWide Used CPU: %s\n", clusterUsedCPU)
+	fmt.Printf("ClusterWide Used Memory: %s (%dGB)\n", clusterUsedMemory, clusterUsedMemory.ScaledValue(resource.Giga))
+	fmt.Printf("ClusterWide Used Pods: %d\n", clusterUsedPods)
+	fmt.Printf("ClusterWide Used CPU Requests: %s\n", clusterUsedCPURequests)
+	fmt.Printf("ClusterWide Used Memory Requests: %s (%dGB)\n", clusterUsedMemoryRequests, clusterUsedMemoryRequests.ScaledValue(resource.Giga))
 
 }
 
