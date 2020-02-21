@@ -307,22 +307,27 @@ func main() {
 		}
 	}
 	fmt.Println("================")
-	fmt.Printf("ClusterWide Allocatable Memory: %s\n", clusterAllocatableMemory)
+	toGiB := float64(clusterAllocatableMemory.ScaledValue(resource.Giga)) / 1.074
+	fmt.Printf("ClusterWide Allocatable Memory: %dGiB\n", int64(toGiB))
 	fmt.Printf("ClusterWide Allocatable CPU: %s\n", clusterAllocatableCPU)
 	fmt.Printf("ClusterWide Allocatable Pods: %s\n", clusterAllocatablePods)
 	fmt.Println("================")
-	fmt.Printf("ResourceQuota ClusterWide Allocated Limits.Memory: %s\n", rqclusterAllocatedLimitsMemory)
+	toGiB = float64(rqclusterAllocatedLimitsMemory.ScaledValue(resource.Giga)) / 1.074
+	fmt.Printf("ResourceQuota ClusterWide Allocated Limits.Memory: %dGiB\n", int64(toGiB))
 	fmt.Printf("ResourceQuota ClusterWide Allocated Limits.CPU: %d\n", rqclusterAllocatedLimitsCPU.AsDec())
 	fmt.Printf("ResourceQuota ClusterWide Allocated Pods: %d\n", rqclusterAllocatedPods.AsDec())
 	fmt.Println("================")
-	fmt.Printf("ResourceQuota ClusterWide Allocated Requests.Memory: %s\n", rqclusterAllocatedRequestsMemory)
+	toGiB = float64(rqclusterAllocatedRequestsMemory.ScaledValue(resource.Giga)) / 1.074
+	fmt.Printf("ResourceQuota ClusterWide Allocated Requests.Memory: %dGiB\n", int64(toGiB))
 	fmt.Printf("ResourceQuota ClusterWide Allocated Requests.CPU: %d\n", rqclusterAllocatedRequestsCPU.AsDec())
 	fmt.Println("----------------")
 	fmt.Printf("ClusterWide Used CPU: %s\n", clusterUsedCPU)
-	fmt.Printf("ClusterWide Used Memory: %s\n", clusterUsedMemory)
+	toGiB = float64(clusterUsedMemory.ScaledValue(resource.Giga)) / 1.074
+	fmt.Printf("ClusterWide Used Memory: %dGiB\n", int64(toGiB))
 	fmt.Printf("ClusterWide Used Pods: %d\n", clusterUsedPods)
 	fmt.Printf("ClusterWide Used CPU Requests: %s\n", clusterUsedCPURequests)
-	fmt.Printf("ClusterWide Used Memory Requests: %s\n", clusterUsedMemoryRequests)
+	toGiB = float64(clusterUsedMemoryRequests.ScaledValue(resource.Giga)) / 1.074
+	fmt.Printf("ClusterWide Used Memory Requests: %dGiB\n", int64(toGiB))
 
 }
 
