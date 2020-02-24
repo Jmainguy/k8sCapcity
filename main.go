@@ -22,6 +22,18 @@ func toGib(rq *resource.Quantity) (result int64) {
 	return result
 }
 
+func toMib(rq *resource.Quantity) (result int64) {
+	result = int64(float64(rq.ScaledValue(resource.Mega)) / 1.074)
+	return result
+}
+
+func homeDir() string {
+	if h := os.Getenv("HOME"); h != "" {
+		return h
+	}
+	return os.Getenv("USERPROFILE") // windows
+}
+
 func getNodeMetrics(clientset *kubernetes.Clientset) (nodeMetricList *metricsv1b1.NodeMetricsList) {
 	data, err := clientset.RESTClient().Get().AbsPath("apis/metrics.k8s.io/v1beta1/nodes").DoRaw()
 	if err != nil {
@@ -58,6 +70,7 @@ func main() {
 	}
 	nodeLabel := flag.String("nodelabel", "", "Label to match for nodes, if blank grab all nodes")
 	nameSpace := flag.String("namespace", "", "Namespace to grab capacity usage from")
+	daemonMode := flag.Bool("daemon", false, "Run in daemon mode")
 	flag.Parse()
 
 	nodeInfo := make(map[string]NodeInfo)
@@ -79,90 +92,10 @@ func main() {
 	if err != nil {
 		panic(err.Error())
 	}
+
+	// BreakOut to namespace if asked
 	if *nameSpace != "" {
-		namespaceMemoryLimits := &resource.Quantity{}
-		namespaceMemoryRequests := &resource.Quantity{}
-		namespaceMemoryUsed := &resource.Quantity{}
-		namespaceCPULimits := &resource.Quantity{}
-		namespaceCPURequests := &resource.Quantity{}
-		namespaceCPUUsed := &resource.Quantity{}
-
-		podMetricList := getPodMetrics(clientset)
-		for _, metricPod := range podMetricList.Items {
-			if *nameSpace == metricPod.Namespace {
-				pods, err := clientset.CoreV1().Pods(*nameSpace).List(metav1.ListOptions{})
-				if err != nil {
-					panic(err.Error())
-				}
-				for _, pod := range pods.Items {
-					if pod.Name == metricPod.Name {
-						if pod.Status.Phase != "Failed" {
-							if pod.Status.Phase != "Succeeded" {
-								for _, container := range pod.Spec.Containers {
-									uniqueContainerName := fmt.Sprintf("%s-%s", pod.Name, container.Name)
-									containerStats := containerInfo[uniqueContainerName]
-									crrm := container.Resources.Requests.Memory()
-									crrc := container.Resources.Requests.Cpu()
-									crlm := container.Resources.Limits.Memory()
-									crlc := container.Resources.Limits.Cpu()
-									containerStats.MemoryRequests = *crrm
-									containerStats.MemoryLimits = *crlm
-									containerStats.CPURequests = *crrc
-									containerStats.CPULimits = *crlc
-									containerStats.Name = container.Name
-									containerStats.Pod = pod.Name
-									containerInfo[uniqueContainerName] = containerStats
-									// Add up for the namespace
-									namespaceMemoryLimits.Add(*crlm)
-									namespaceMemoryRequests.Add(*crrm)
-									namespaceCPULimits.Add(*crlc)
-									namespaceCPURequests.Add(*crrc)
-								}
-							}
-						}
-					}
-				}
-
-				fmt.Println("")
-				fmt.Println("================")
-				fmt.Printf("****Pod Name: %s****\n", metricPod.Name)
-				for _, container := range metricPod.Containers {
-					uniqueContainerName := fmt.Sprintf("%s-%s", metricPod.Name, container.Name)
-					containerStats := containerInfo[uniqueContainerName]
-					containerStats.UsedMemory = *container.Usage.Memory()
-					containerStats.UsedCPU = *container.Usage.Cpu()
-					containerInfo[uniqueContainerName] = containerStats
-					// Add up for the namespace
-					namespaceMemoryUsed.Add(*container.Usage.Memory())
-					namespaceCPUUsed.Add(*container.Usage.Cpu())
-				}
-				for _, container := range containerInfo {
-					if metricPod.Name == container.Pod {
-						fmt.Println("================")
-						fmt.Printf("Container Name: %s\n", container.Name)
-						fmt.Println("----------------")
-						fmt.Printf("CPURequests: %s\n", &container.CPURequests)
-						fmt.Printf("MemoryRequests: %s\n", &container.MemoryRequests)
-						fmt.Printf("CPULimits: %s\n", &container.CPULimits)
-						fmt.Printf("MemoryLimits: %s\n", &container.MemoryLimits)
-						fmt.Println("----------------")
-						fmt.Printf("Used CPU: %s\n", &container.UsedCPU)
-						fmt.Printf("Used Memory: %s (%dMB)\n", &container.UsedMemory, container.UsedMemory.ScaledValue(resource.Mega))
-					}
-				}
-			}
-		}
-		fmt.Printf("<><><><><>Sum Total for Namespace: %s<><><><><>\n", *nameSpace)
-		fmt.Println("----------------")
-		fmt.Printf("Namespace Total CPURequests: %s\n", namespaceCPURequests)
-		fmt.Printf("Namespace Total MemoryRequests: %s\n", namespaceMemoryRequests)
-		fmt.Printf("Namespace Total CPULimits: %s\n", namespaceCPULimits)
-		fmt.Printf("Namespace Total MemoryLimits: %s\n", namespaceMemoryLimits)
-		fmt.Println("----------------")
-		fmt.Printf("Namespace Total Used CPU: %s\n", namespaceCPUUsed)
-		fmt.Printf("Namespace Total Used Memory: %s (%dMB)\n", namespaceMemoryUsed, namespaceMemoryUsed.ScaledValue(resource.Mega))
-
-		os.Exit(0)
+		namespaceMode(clientset, nameSpace, containerInfo)
 	}
 
 	// List all nodes
@@ -192,8 +125,6 @@ func main() {
 			nodeInfo[v.Name] = node
 		}
 	}
-
-	fmt.Printf("There are %d nodes in this cluster\n", len(nodeInfo))
 
 	for _, v := range nodes.Items {
 		if nodeInfo[v.Name].PrintOutput == true {
@@ -253,14 +184,19 @@ func main() {
 			if pod.Status.Phase != "Succeeded" {
 				for _, container := range pod.Spec.Containers {
 					crrm := container.Resources.Requests.Memory()
+					crlm := container.Resources.Limits.Memory()
 					crrc := container.Resources.Requests.Cpu()
 					UsedMemRequests := &resource.Quantity{}
+					UsedMemLimits := &resource.Quantity{}
 					UsedCPURequests := &resource.Quantity{}
 					UsedMemRequests.Add(node.UsedMemoryRequests)
 					UsedMemRequests.Add(*crrm)
+					UsedMemLimits.Add(node.UsedMemoryLimits)
+					UsedMemLimits.Add(*crlm)
 					UsedCPURequests.Add(node.UsedCPURequests)
 					UsedCPURequests.Add(*crrc)
 					node.UsedMemoryRequests = *UsedMemRequests
+					node.UsedMemoryLimits = *UsedMemLimits
 					node.UsedCPURequests = *UsedCPURequests
 				}
 				node.UsedPods += 1
@@ -269,10 +205,17 @@ func main() {
 		nodeInfo[pod.Spec.NodeName] = node
 	}
 
+	if *daemonMode {
+		runDaemonMode(nodeInfo, clusterAllocatableMemory, clusterAllocatableCPU, clusterAllocatablePods, rqclusterAllocatedLimitsMemory, rqclusterAllocatedLimitsCPU, rqclusterAllocatedPods, rqclusterAllocatedRequestsMemory, rqclusterAllocatedRequestsCPU, *nodeLabel)
+		os.Exit(0)
+	}
+	fmt.Printf("There are %d nodes in this cluster\n", len(nodeInfo))
+
 	clusterUsedCPURequests := &resource.Quantity{}
 	clusterUsedCPU := &resource.Quantity{}
 	clusterUsedMemory := &resource.Quantity{}
 	clusterUsedMemoryRequests := &resource.Quantity{}
+	clusterUsedMemoryLimits := &resource.Quantity{}
 	var clusterUsedPods int64
 	for node, info := range nodeInfo {
 		if info.PrintOutput == true {
@@ -307,6 +250,7 @@ func main() {
 			clusterUsedCPURequests.Add(info.UsedCPURequests)
 			clusterUsedCPU.Add(info.UsedCPU)
 			clusterUsedMemoryRequests.Add(info.UsedMemoryRequests)
+			clusterUsedMemoryLimits.Add(info.UsedMemoryLimits)
 			clusterUsedMemory.Add(info.UsedMemory)
 			clusterUsedPods = clusterUsedPods + info.UsedPods
 		}
@@ -329,11 +273,4 @@ func main() {
 	fmt.Printf("ClusterWide Used CPU Requests: %s\n", clusterUsedCPURequests)
 	fmt.Printf("ClusterWide Used Memory Requests: %dGiB\n", toGib(clusterUsedMemoryRequests))
 
-}
-
-func homeDir() string {
-	if h := os.Getenv("HOME"); h != "" {
-		return h
-	}
-	return os.Getenv("USERPROFILE") // windows
 }
