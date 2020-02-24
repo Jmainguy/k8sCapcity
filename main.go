@@ -17,6 +17,11 @@ import (
 	"strings"
 )
 
+func toGib(rq *resource.Quantity) (result int64) {
+	result = int64(float64(rq.ScaledValue(resource.Giga)) / 1.074)
+	return result
+}
+
 func getNodeMetrics(clientset *kubernetes.Clientset) (nodeMetricList *metricsv1b1.NodeMetricsList) {
 	data, err := clientset.RESTClient().Get().AbsPath("apis/metrics.k8s.io/v1beta1/nodes").DoRaw()
 	if err != nil {
@@ -274,14 +279,14 @@ func main() {
 			fmt.Println("================")
 			fmt.Printf("NodeName: %s\n", node)
 			fmt.Printf("Allocatable CPU: %s\n", &info.AllocatableCPU)
-			fmt.Printf("Allocatable Memory: %s (%dGB)\n", &info.AllocatableMemory, info.AllocatableMemory.ScaledValue(resource.Giga))
+			fmt.Printf("Allocatable Memory: %dGiB\n", toGib(&info.AllocatableMemory))
 			fmt.Printf("Allocatable Pods: %s\n", &info.AllocatablePods)
 			fmt.Println("----------------")
 			fmt.Printf("Used CPU: %s\n", &info.UsedCPU)
-			fmt.Printf("Used Memory: %s (%dGB)\n", &info.UsedMemory, info.UsedMemory.ScaledValue(resource.Giga))
+			fmt.Printf("Used Memory: %dGiB\n", toGib(&info.UsedMemory))
 			fmt.Printf("Used Pods: %d\n", info.UsedPods)
 			fmt.Printf("Used CPU Requests: %s\n", &info.UsedCPURequests)
-			fmt.Printf("Used Memory Requests: %s (%dGB)\n", &info.UsedMemoryRequests, info.UsedMemoryRequests.ScaledValue(resource.Giga))
+			fmt.Printf("Used Memory Requests: %dGiB\n", toGib(&info.UsedMemoryRequests))
 			fmt.Println("----------------")
 
 			AvailbleCPURequests := &resource.Quantity{}
@@ -293,7 +298,7 @@ func main() {
 
 			AvailableMemoryRequests = &info.AllocatableMemory
 			AvailableMemoryRequests.Sub(info.UsedMemoryRequests)
-			fmt.Printf("Available Memory Requests: %s (%dGB)\n", AvailableMemoryRequests, AvailableMemoryRequests.ScaledValue(resource.Giga))
+			fmt.Printf("Available Memory Requests: %dGiB\n", toGib(AvailableMemoryRequests))
 
 			AvailablePods, _ := info.AllocatablePods.AsInt64()
 			AvailablePods = AvailablePods - info.UsedPods
@@ -307,25 +312,22 @@ func main() {
 		}
 	}
 	fmt.Println("================")
-	cwam := clusterAllocatableMemory.ScaledValue(resource.Giga)
-	fmt.Printf("ClusterWide Allocatable Memory: %s (%dGB)\n", clusterAllocatableMemory, cwam)
+	fmt.Printf("ClusterWide Allocatable Memory: %dGiB\n", toGib(clusterAllocatableMemory))
 	fmt.Printf("ClusterWide Allocatable CPU: %s\n", clusterAllocatableCPU)
 	fmt.Printf("ClusterWide Allocatable Pods: %s\n", clusterAllocatablePods)
 	fmt.Println("================")
-	rqcwalm := rqclusterAllocatedLimitsMemory.ScaledValue(resource.Giga)
-	fmt.Printf("ResourceQuota ClusterWide Allocated Limits.Memory: %s (%dGB)\n", rqclusterAllocatedLimitsMemory, rqcwalm)
+	fmt.Printf("ResourceQuota ClusterWide Allocated Limits.Memory: %dGiB\n", toGib(rqclusterAllocatedLimitsMemory))
 	fmt.Printf("ResourceQuota ClusterWide Allocated Limits.CPU: %d\n", rqclusterAllocatedLimitsCPU.AsDec())
 	fmt.Printf("ResourceQuota ClusterWide Allocated Pods: %d\n", rqclusterAllocatedPods.AsDec())
 	fmt.Println("================")
-	rqcwarm := rqclusterAllocatedRequestsMemory.ScaledValue(resource.Giga)
-	fmt.Printf("ResourceQuota ClusterWide Allocated Requests.Memory: %s (%dGB)\n", rqclusterAllocatedRequestsMemory, rqcwarm)
+	fmt.Printf("ResourceQuota ClusterWide Allocated Requests.Memory: %dGiB\n", toGib(rqclusterAllocatedRequestsMemory))
 	fmt.Printf("ResourceQuota ClusterWide Allocated Requests.CPU: %d\n", rqclusterAllocatedRequestsCPU.AsDec())
 	fmt.Println("----------------")
 	fmt.Printf("ClusterWide Used CPU: %s\n", clusterUsedCPU)
-	fmt.Printf("ClusterWide Used Memory: %s (%dGB)\n", clusterUsedMemory, clusterUsedMemory.ScaledValue(resource.Giga))
+	fmt.Printf("ClusterWide Used Memory: %dGiB\n", toGib(clusterUsedMemory))
 	fmt.Printf("ClusterWide Used Pods: %d\n", clusterUsedPods)
 	fmt.Printf("ClusterWide Used CPU Requests: %s\n", clusterUsedCPURequests)
-	fmt.Printf("ClusterWide Used Memory Requests: %s (%dGB)\n", clusterUsedMemoryRequests, clusterUsedMemoryRequests.ScaledValue(resource.Giga))
+	fmt.Printf("ClusterWide Used Memory Requests: %dGiB\n", toGib(clusterUsedMemoryRequests))
 
 }
 
