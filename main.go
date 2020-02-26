@@ -126,11 +126,20 @@ func main() {
 		}
 	}
 
+	nminusCpu := resource.Quantity{}
+	nminusMemory := resource.Quantity{}
+	nminusPods := resource.Quantity{}
+
 	for _, v := range nodes.Items {
 		if nodeInfo[v.Name].PrintOutput == true {
 			cpu := v.Status.Allocatable.Cpu()
 			mem := v.Status.Allocatable.Memory()
 			pods := v.Status.Allocatable.Pods()
+			if cpu.Value() > nminusCpu.Value() {
+				nminusCpu = *cpu
+				nminusMemory = *mem
+				nminusPods = *pods
+			}
 			clusterAllocatableMemory.Add(*mem)
 			clusterAllocatableCPU.Add(*cpu)
 			clusterAllocatablePods.Add(*pods)
@@ -206,7 +215,7 @@ func main() {
 	}
 
 	if *daemonMode {
-		runDaemonMode(nodeInfo, clusterAllocatableMemory, clusterAllocatableCPU, clusterAllocatablePods, rqclusterAllocatedLimitsMemory, rqclusterAllocatedLimitsCPU, rqclusterAllocatedPods, rqclusterAllocatedRequestsMemory, rqclusterAllocatedRequestsCPU, *nodeLabel)
+		runDaemonMode(nodeInfo, clusterAllocatableMemory, clusterAllocatableCPU, clusterAllocatablePods, rqclusterAllocatedLimitsMemory, rqclusterAllocatedLimitsCPU, rqclusterAllocatedPods, rqclusterAllocatedRequestsMemory, rqclusterAllocatedRequestsCPU, nminusCpu, nminusMemory, nminusPods, *nodeLabel)
 		os.Exit(0)
 	}
 	fmt.Printf("There are %d nodes in this cluster\n", len(nodeInfo))
