@@ -9,6 +9,7 @@ import (
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	metricsv1b1 "k8s.io/metrics/pkg/apis/metrics/v1beta1"
 	"time"
@@ -64,7 +65,11 @@ func main() {
 	// use the current context in kubeconfig
 	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
 	if err != nil {
-		panic(err.Error())
+		// no config, maybe we are inside a kubernetes cluster.
+		config, err = rest.InClusterConfig()
+		if err != nil {
+			panic(err.Error())
+		}
 	}
 
 	// create the clientset
