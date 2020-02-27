@@ -5,29 +5,16 @@ import (
 	resource "k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/clientcmd"
 	"strings"
 )
 
-func gatherInfo(kubeconfig, nodeLabel *string) (clusterInfo ClusterInfo) {
+func gatherInfo(clientset *kubernetes.Clientset, nodeLabel *string) (clusterInfo ClusterInfo) {
 	nodeInfo := make(map[string]NodeInfo)
 	labelSlice := strings.Split(*nodeLabel, "=")
 	nodeLabelKey := labelSlice[0]
 	nodeLabelValue := ""
 	if nodeLabelKey != "" {
 		nodeLabelValue = labelSlice[1]
-	}
-
-	// use the current context in kubeconfig
-	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	// create the clientset
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		panic(err.Error())
 	}
 
 	// List all nodes

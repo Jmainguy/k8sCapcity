@@ -86,12 +86,12 @@ func main() {
 	// Gather info
 	if *daemonMode {
 		for {
-			clusterInfo := gatherInfo(kubeconfig, nodeLabel)
+			clusterInfo := gatherInfo(clientset, nodeLabel)
 			runDaemonMode(clusterInfo)
 			time.Sleep(300 * time.Second)
 		}
 	} else {
-		clusterInfo := gatherInfo(kubeconfig, nodeLabel)
+		clusterInfo := gatherInfo(clientset, nodeLabel)
 		fmt.Println(len(clusterInfo.NodeInfo))
 		humanMode(clusterInfo)
 	}
