@@ -1,0 +1,13 @@
+apiVersion: authorization.openshift.io/v1
+groupNames: null
+kind: ClusterRoleBinding
+metadata:
+  name: k8scapcity
+roleRef:
+  name: k8scapcity
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: k8scapcity
+userNames:
+- system:serviceaccount:k8scapcity:default
