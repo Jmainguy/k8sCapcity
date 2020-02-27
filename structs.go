@@ -4,6 +4,22 @@ import (
 	resource "k8s.io/apimachinery/pkg/api/resource"
 )
 
+type ClusterInfo struct {
+	NodeInfo                         map[string]NodeInfo
+	ClusterAllocatableMemory         resource.Quantity
+	ClusterAllocatableCPU            resource.Quantity
+	ClusterAllocatablePods           resource.Quantity
+	RqclusterAllocatedLimitsMemory   resource.Quantity
+	RqclusterAllocatedLimitsCPU      resource.Quantity
+	RqclusterAllocatedPods           resource.Quantity
+	RqclusterAllocatedRequestsMemory resource.Quantity
+	RqclusterAllocatedRequestsCPU    resource.Quantity
+	NminusCPU                        resource.Quantity
+	NminusMemory                     resource.Quantity
+	NminusPods                       resource.Quantity
+	NodeLabel                        string
+}
+
 type NodeInfo struct {
 	UsedPods           int64
 	AllocatableCPU     resource.Quantity

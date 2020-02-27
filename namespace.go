@@ -9,12 +9,12 @@ import (
 )
 
 func namespaceMode(clientset *kubernetes.Clientset, nameSpace *string, containerInfo map[string]ContainerInfo) {
-	namespaceMemoryLimits := &resource.Quantity{}
-	namespaceMemoryRequests := &resource.Quantity{}
-	namespaceMemoryUsed := &resource.Quantity{}
-	namespaceCPULimits := &resource.Quantity{}
-	namespaceCPURequests := &resource.Quantity{}
-	namespaceCPUUsed := &resource.Quantity{}
+	namespaceMemoryLimits := resource.Quantity{}
+	namespaceMemoryRequests := resource.Quantity{}
+	namespaceMemoryUsed := resource.Quantity{}
+	namespaceCPULimits := resource.Quantity{}
+	namespaceCPURequests := resource.Quantity{}
+	namespaceCPUUsed := resource.Quantity{}
 
 	podMetricList := getPodMetrics(clientset)
 	for _, metricPod := range podMetricList.Items {
@@ -71,25 +71,25 @@ func namespaceMode(clientset *kubernetes.Clientset, nameSpace *string, container
 					fmt.Printf("Container Name: %s\n", container.Name)
 					fmt.Println("----------------")
 					fmt.Printf("CPURequests: %s\n", &container.CPURequests)
-					fmt.Printf("MemoryRequests: %dMiB\n", toMib(&container.MemoryRequests))
+					fmt.Printf("MemoryRequests: %dMiB\n", toMib(container.MemoryRequests))
 					fmt.Printf("CPULimits: %s\n", &container.CPULimits)
-					fmt.Printf("MemoryLimits: %dMiB\n", toMib(&container.MemoryLimits))
+					fmt.Printf("MemoryLimits: %dMiB\n", toMib(container.MemoryLimits))
 					fmt.Println("----------------")
 					fmt.Printf("Used CPU: %s\n", &container.UsedCPU)
-					fmt.Printf("Used Memory: %dMiB\n", toMib(&container.UsedMemory))
+					fmt.Printf("Used Memory: %dMiB\n", toMib(container.UsedMemory))
 				}
 			}
 		}
 	}
 	fmt.Printf("<><><><><>Sum Total for Namespace: %s<><><><><>\n", *nameSpace)
 	fmt.Println("----------------")
-	fmt.Printf("Namespace Total CPURequests: %s\n", namespaceCPURequests)
+	fmt.Printf("Namespace Total CPURequests: %s\n", &namespaceCPURequests)
 	fmt.Printf("Namespace Total MemoryRequests: %dMiB\n", toMib(namespaceMemoryRequests))
-	fmt.Printf("Namespace Total CPULimits: %s\n", namespaceCPULimits)
+	fmt.Printf("Namespace Total CPULimits: %s\n", &namespaceCPULimits)
 	fmt.Printf("Namespace Total MemoryLimits: %dMiB\n", toMib(namespaceMemoryLimits))
 	fmt.Println("----------------")
-	fmt.Printf("Namespace Total Used CPU: %s\n", namespaceCPUUsed)
-	fmt.Printf("Namespace Total Used Memory: %dMiB)\n", toMib(namespaceMemoryUsed))
+	fmt.Printf("Namespace Total Used CPU: %s\n", &namespaceCPUUsed)
+	fmt.Printf("Namespace Total Used Memory: %dMiB\n", toMib(namespaceMemoryUsed))
 
 	os.Exit(0)
 }
