@@ -21,7 +21,7 @@ func humanMode(clusterInfo ClusterInfo) {
 	fmt.Printf("There are %d nodes in this cluster\n", len(clusterInfo.NodeInfo))
 
 	for name, node := range clusterInfo.NodeInfo {
-		if node.PrintOutput == true {
+		if node.PrintOutput {
 			fmt.Println("================")
 			fmt.Printf("NodeName: %s\n", name)
 			fmt.Printf("Allocatable CPU: %s\n", &node.AllocatableCPU)

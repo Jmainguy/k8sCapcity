@@ -13,7 +13,7 @@ func runDaemonMode(clusterInfo ClusterInfo) {
 	daemonLog.UtilizationFactorCPURequests = make(map[string]float64)
 
 	for name, node := range clusterInfo.NodeInfo {
-		if node.PrintOutput == true {
+		if node.PrintOutput {
 			clusterInfo.ClusterUsedCPURequests.Add(node.UsedCPURequests)
 			clusterInfo.ClusterUsedCPU.Add(node.UsedCPU)
 			clusterInfo.ClusterUsedMemoryRequests.Add(node.UsedMemoryRequests)

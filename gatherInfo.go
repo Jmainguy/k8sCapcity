@@ -44,7 +44,7 @@ func gatherInfo(clientset *kubernetes.Clientset, nodeLabel *string) (clusterInfo
 	}
 
 	for _, v := range nodes.Items {
-		if nodeInfo[v.Name].PrintOutput == true {
+		if nodeInfo[v.Name].PrintOutput {
 			cpu := v.Status.Allocatable.Cpu()
 			mem := v.Status.Allocatable.Memory()
 			pods := v.Status.Allocatable.Pods()
@@ -95,6 +95,7 @@ func gatherInfo(clientset *kubernetes.Clientset, nodeLabel *string) (clusterInfo
 	}
 
 	pods, err := clientset.CoreV1().Pods("").List(metav1.ListOptions{})
+	check(err)
 	for _, pod := range pods.Items {
 		node := nodeInfo[pod.Spec.NodeName]
 		if pod.Status.Phase != "Failed" {

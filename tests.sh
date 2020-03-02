@@ -6,10 +6,10 @@ if [ $FormatCheck -gt 0 ]; then
     exit 1
 fi
 ## Run golint
-golint -set_exit_status
-if [ $? -gt 0 ]; then
-    exit 1
-fi
+#golint -set_exit_status
+#if [ $? -gt 0 ]; then
+#    exit 1
+#fi
 ## go test
 go test -v
 if [ $? -gt 0 ]; then
