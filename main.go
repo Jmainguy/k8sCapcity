@@ -59,6 +59,7 @@ func main() {
 	nodeLabel := flag.String("nodelabel", "", "Label to match for nodes, if blank grab all nodes")
 	nameSpace := flag.String("namespace", "", "Namespace to grab capacity usage from")
 	daemonMode := flag.Bool("daemon", false, "Run in daemon mode")
+	jsonMode := flag.Bool("json", false, "Output information in json format")
 	flag.Parse()
 
 	containerInfo := make(map[string]ContainerInfo)
@@ -90,6 +91,10 @@ func main() {
 			runDaemonMode(clusterInfo)
 			time.Sleep(300 * time.Second)
 		}
+	} else if *jsonMode {
+		clusterInfo := gatherInfo(clientset, nodeLabel)
+		runDaemonMode(clusterInfo)
+
 	} else {
 		clusterInfo := gatherInfo(clientset, nodeLabel)
 		fmt.Println(len(clusterInfo.NodeInfo))

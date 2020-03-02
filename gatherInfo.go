@@ -23,6 +23,7 @@ func gatherInfo(clientset *kubernetes.Clientset, nodeLabel *string) (clusterInfo
 		panic(err.Error())
 	}
 	if nodeLabelKey != "" {
+		clusterInfo.NodeLabel = nodeLabelKey
 		for _, v := range nodes.Items {
 			for label, value := range v.ObjectMeta.Labels {
 				if label == nodeLabelKey {

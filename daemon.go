@@ -13,24 +13,31 @@ func runDaemonMode(clusterInfo ClusterInfo) {
 	clusterUsedMemoryRequests := &resource.Quantity{}
 	clusterUsedMemoryLimits := &resource.Quantity{}
 	var clusterUsedPods int64
+	daemonLog := DaemonLog{}
+	daemonLog.UtilizationFactorPods = make(map[string]float64)
+	daemonLog.UtilizationFactorMemoryRequests = make(map[string]float64)
+	daemonLog.UtilizationFactorCPURequests = make(map[string]float64)
 
-	for _, info := range clusterInfo.NodeInfo {
-		if info.PrintOutput == true {
-			clusterUsedCPURequests.Add(info.UsedCPURequests)
-			clusterUsedCPU.Add(info.UsedCPU)
-			clusterUsedMemoryRequests.Add(info.UsedMemoryRequests)
-			clusterUsedMemory.Add(info.UsedMemory)
-			clusterUsedPods = clusterUsedPods + info.UsedPods
-			clusterUsedMemoryLimits.Add(info.UsedMemoryLimits)
+	for name, node := range clusterInfo.NodeInfo {
+		if node.PrintOutput == true {
+			clusterUsedCPURequests.Add(node.UsedCPURequests)
+			clusterUsedCPU.Add(node.UsedCPU)
+			clusterUsedMemoryRequests.Add(node.UsedMemoryRequests)
+			clusterUsedMemory.Add(node.UsedMemory)
+			clusterUsedPods = clusterUsedPods + node.UsedPods
+			clusterUsedMemoryLimits.Add(node.UsedMemoryLimits)
+			daemonLog.UtilizationFactorPods[name] = float64(node.UsedPods) / float64(node.AllocatablePods.Value())
+			daemonLog.UtilizationFactorMemoryRequests[name] = float64(node.UsedMemoryRequests.Value()) / float64(node.AllocatableMemory.Value())
+			daemonLog.UtilizationFactorCPURequests[name] = float64(node.UsedCPURequests.Value()) / float64(node.AllocatableCPU.Value())
+
 		}
 	}
 
-	daemonLog := DaemonLog{}
 	daemonLog.EventKind = "metric"
 	daemonLog.EventModule = "k8s_quota"
 	daemonLog.EventProvider = "k8sCapcity"
 	daemonLog.EventType = "info"
-	daemonLog.EventVersion = "02/24/2020-01"
+	daemonLog.EventVersion = "03/02/2020-01"
 	daemonLog.NodeLabel = clusterInfo.NodeLabel
 	daemonLog.ResourceQuotaCPURequestCores = clusterInfo.RqclusterAllocatedRequestsCPU.Value()
 	daemonLog.ResourceQuotaCPURequestMilliCores = clusterInfo.RqclusterAllocatedRequestsCPU.ScaledValue(resource.Milli)
