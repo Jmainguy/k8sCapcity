@@ -2,10 +2,6 @@
 # Make sure to check the documentation at http://goreleaser.com
 env:
   - GO111MODULE=on
-before:
-  hooks:
-    - go mod tidy
-    - go test
 builds:
 - env:
   - CGO_ENABLED=0

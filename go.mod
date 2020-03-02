@@ -4,6 +4,7 @@ go 1.12
 
 require (
 	github.com/sirupsen/logrus v1.4.2
+	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550 // indirect
 	k8s.io/api v0.0.0-20191010143144-fbf594f18f80
 	k8s.io/apimachinery v0.0.0-20191014065749-fb3eea214746
 	k8s.io/client-go v0.0.0-20191014070654-bd505ee787b2
