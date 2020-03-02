@@ -15,6 +15,12 @@ import (
 	"time"
 )
 
+func check(err error) {
+	if err != nil {
+		panic(err.Error())
+	}
+}
+
 func homeDir() string {
 	if h := os.Getenv("HOME"); h != "" {
 		return h

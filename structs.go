@@ -4,11 +4,18 @@ import (
 	resource "k8s.io/apimachinery/pkg/api/resource"
 )
 
+// ClusterInfo : Information about the cluster
 type ClusterInfo struct {
 	NodeInfo                         map[string]NodeInfo
 	ClusterAllocatableMemory         resource.Quantity
 	ClusterAllocatableCPU            resource.Quantity
 	ClusterAllocatablePods           resource.Quantity
+	ClusterUsedCPURequests           resource.Quantity
+	ClusterUsedCPU                   resource.Quantity
+	ClusterUsedMemory                resource.Quantity
+	ClusterUsedMemoryRequests        resource.Quantity
+	ClusterUsedMemoryLimits          resource.Quantity
+	ClusterUsedPods                  int64
 	RqclusterAllocatedLimitsMemory   resource.Quantity
 	RqclusterAllocatedLimitsCPU      resource.Quantity
 	RqclusterAllocatedPods           resource.Quantity
@@ -20,6 +27,7 @@ type ClusterInfo struct {
 	NodeLabel                        string
 }
 
+// NodeInfo : Information about the node
 type NodeInfo struct {
 	UsedPods           int64
 	AllocatableCPU     resource.Quantity
@@ -33,6 +41,7 @@ type NodeInfo struct {
 	PrintOutput        bool
 }
 
+// ContainerInfo : Information about the container
 type ContainerInfo struct {
 	Name           string
 	Pod            string
@@ -44,6 +53,7 @@ type ContainerInfo struct {
 	UsedMemory     resource.Quantity
 }
 
+// DaemonLog : Json to print out about metrics we gathered
 type DaemonLog struct {
 	EventKind                                    string             `json:"event.kind"`
 	EventModule                                  string             `json:"event.module"`

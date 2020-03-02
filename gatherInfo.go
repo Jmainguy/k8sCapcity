@@ -116,7 +116,7 @@ func gatherInfo(clientset *kubernetes.Clientset, nodeLabel *string) (clusterInfo
 					node.UsedMemoryLimits = *UsedMemLimits
 					node.UsedCPURequests = *UsedCPURequests
 				}
-				node.UsedPods += 1
+				node.UsedPods++
 			}
 		}
 		nodeInfo[pod.Spec.NodeName] = node

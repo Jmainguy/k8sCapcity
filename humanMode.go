@@ -7,12 +7,12 @@ import (
 )
 
 func toGib(rq resource.Quantity) (result int64) {
-	result = int64(float64(rq.ScaledValue(resource.Giga)) / 1.074)
+	result = int64(float64(rq.ScaledValue(resource.Giga)) / 1.073741824)
 	return result
 }
 
 func toMib(rq resource.Quantity) (result int64) {
-	result = int64(float64(rq.ScaledValue(resource.Mega)) / 1.074)
+	result = int64(float64(rq.ScaledValue(resource.Mega)) / 1.048576)
 	return result
 }
 
@@ -20,48 +20,42 @@ func humanMode(clusterInfo ClusterInfo) {
 
 	fmt.Printf("There are %d nodes in this cluster\n", len(clusterInfo.NodeInfo))
 
-	clusterUsedCPURequests := resource.Quantity{}
-	clusterUsedCPU := resource.Quantity{}
-	clusterUsedMemory := resource.Quantity{}
-	clusterUsedMemoryRequests := resource.Quantity{}
-	clusterUsedMemoryLimits := resource.Quantity{}
-	var clusterUsedPods int64
-	for node, info := range clusterInfo.NodeInfo {
-		if info.PrintOutput == true {
+	for name, node := range clusterInfo.NodeInfo {
+		if node.PrintOutput == true {
 			fmt.Println("================")
-			fmt.Printf("NodeName: %s\n", node)
-			fmt.Printf("Allocatable CPU: %s\n", &info.AllocatableCPU)
-			fmt.Printf("Allocatable Memory: %dGiB\n", toGib(info.AllocatableMemory))
-			fmt.Printf("Allocatable Pods: %s\n", &info.AllocatablePods)
+			fmt.Printf("NodeName: %s\n", name)
+			fmt.Printf("Allocatable CPU: %s\n", &node.AllocatableCPU)
+			fmt.Printf("Allocatable Memory: %dGiB\n", toGib(node.AllocatableMemory))
+			fmt.Printf("Allocatable Pods: %s\n", &node.AllocatablePods)
 			fmt.Println("----------------")
-			fmt.Printf("Used CPU: %s\n", &info.UsedCPU)
-			fmt.Printf("Used Memory: %dGiB\n", toGib(info.UsedMemory))
-			fmt.Printf("Used Pods: %d\n", info.UsedPods)
-			fmt.Printf("Used CPU Requests: %s\n", &info.UsedCPURequests)
-			fmt.Printf("Used Memory Requests: %dGiB\n", toGib(info.UsedMemoryRequests))
+			fmt.Printf("Used CPU: %s\n", &node.UsedCPU)
+			fmt.Printf("Used Memory: %dGiB\n", toGib(node.UsedMemory))
+			fmt.Printf("Used Pods: %d\n", node.UsedPods)
+			fmt.Printf("Used CPU Requests: %s\n", &node.UsedCPURequests)
+			fmt.Printf("Used Memory Requests: %dGiB\n", toGib(node.UsedMemoryRequests))
 			fmt.Println("----------------")
 
 			AvailbleCPURequests := resource.Quantity{}
 			AvailableMemoryRequests := resource.Quantity{}
 
-			AvailbleCPURequests = info.AllocatableCPU
-			AvailbleCPURequests.Sub(info.UsedCPURequests)
+			AvailbleCPURequests = node.AllocatableCPU
+			AvailbleCPURequests.Sub(node.UsedCPURequests)
 			fmt.Printf("Available CPU Requests: %s\n", &AvailbleCPURequests)
 
-			AvailableMemoryRequests = info.AllocatableMemory
-			AvailableMemoryRequests.Sub(info.UsedMemoryRequests)
+			AvailableMemoryRequests = node.AllocatableMemory
+			AvailableMemoryRequests.Sub(node.UsedMemoryRequests)
 			fmt.Printf("Available Memory Requests: %dGiB\n", toGib(AvailableMemoryRequests))
 
-			AvailablePods, _ := info.AllocatablePods.AsInt64()
-			AvailablePods = AvailablePods - info.UsedPods
+			AvailablePods, _ := node.AllocatablePods.AsInt64()
+			AvailablePods = AvailablePods - node.UsedPods
 			fmt.Printf("Available Pods: %d\n", AvailablePods)
 			// Add to cluster total
-			clusterUsedCPURequests.Add(info.UsedCPURequests)
-			clusterUsedCPU.Add(info.UsedCPU)
-			clusterUsedMemoryRequests.Add(info.UsedMemoryRequests)
-			clusterUsedMemoryLimits.Add(info.UsedMemoryLimits)
-			clusterUsedMemory.Add(info.UsedMemory)
-			clusterUsedPods = clusterUsedPods + info.UsedPods
+			clusterInfo.ClusterUsedCPURequests.Add(node.UsedCPURequests)
+			clusterInfo.ClusterUsedCPU.Add(node.UsedCPU)
+			clusterInfo.ClusterUsedMemoryRequests.Add(node.UsedMemoryRequests)
+			clusterInfo.ClusterUsedMemoryLimits.Add(node.UsedMemoryLimits)
+			clusterInfo.ClusterUsedMemory.Add(node.UsedMemory)
+			clusterInfo.ClusterUsedPods = clusterInfo.ClusterUsedPods + node.UsedPods
 		}
 	}
 	fmt.Println("================")
@@ -76,10 +70,10 @@ func humanMode(clusterInfo ClusterInfo) {
 	fmt.Printf("ResourceQuota ClusterWide Allocated Requests.Memory: %dGiB\n", toGib(clusterInfo.RqclusterAllocatedRequestsMemory))
 	fmt.Printf("ResourceQuota ClusterWide Allocated Requests.CPU: %d\n", clusterInfo.RqclusterAllocatedRequestsCPU.AsDec())
 	fmt.Println("----------------")
-	fmt.Printf("ClusterWide Used CPU: %d\n", clusterUsedCPU.Value())
-	fmt.Printf("ClusterWide Used Memory: %dGiB\n", toGib(clusterUsedMemory))
-	fmt.Printf("ClusterWide Used Pods: %d\n", clusterUsedPods)
-	fmt.Printf("ClusterWide Used CPU Requests: %d\n", clusterUsedCPURequests.Value())
-	fmt.Printf("ClusterWide Used Memory Requests: %dGiB\n", toGib(clusterUsedMemoryRequests))
+	fmt.Printf("ClusterWide Used CPU: %d\n", clusterInfo.ClusterUsedCPU.Value())
+	fmt.Printf("ClusterWide Used Memory: %dGiB\n", toGib(clusterInfo.ClusterUsedMemory))
+	fmt.Printf("ClusterWide Used Pods: %d\n", clusterInfo.ClusterUsedPods)
+	fmt.Printf("ClusterWide Used CPU Requests: %d\n", clusterInfo.ClusterUsedCPURequests.Value())
+	fmt.Printf("ClusterWide Used Memory Requests: %dGiB\n", toGib(clusterInfo.ClusterUsedMemoryRequests))
 
 }
