@@ -1,0 +1,14 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: k8scapcity
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: k8scapcity
+    spec:
+      containers:
+        - name: k8scapcity
+          image: 'hub.soh.re/k8scapcity:v0.2.0'
