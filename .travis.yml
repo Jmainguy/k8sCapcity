@@ -8,10 +8,11 @@ env:
     - GO111MODULE="on" GOLANGCI_LINT_VERSION=1.23.7
   global:
     secure: mLWEfPdleOiqQuGVhQRM/cSJ2I7N3/oFUJgKjsPgR0TaZ5Q8jEK2p/K/HsAMAscNCQQHZBlvpjhG2+9K1nCNS/9po9vrzy8mFDXepqYuI4yH2qPnoz00yU2crPSzjPHuZd8l/NW9i3FKfVO/5xQtNI8CXjck8oaK9vLPZ3O8y2s50Cd3szH7m9EdnzeSaOz4d5wrn7XKRdpG5yMPj9J0ZRdY9CPAa8L09WMrOEp96ZTRdRiShwOXO3FZ1wz0jI4No3taWb/q91SVdTOvJVTV6dnhMICjmrUwzvQEVxPWmXib1h9SnP7Zl6d2JqDY8E/mAZKP1ILWcODG/+vxVjYtf8Zblu/KDuP9MZhfGwIUg0PcMKUaFipH5JhNtXSdfBC3Dr3kzY0NjqsFIn2w6UTOlcNuZIBoWTcIOjCQIYL3NdMVkD09ygXEpFxHolu9DRsfBkaz6Se5TWiWipB3vA1EzFAAyjuGTKVP7FEiNPKN5Ltidp5xzOkyHOMq/dHUF3REo98pEqNwWK6pZl3gylRWedMuPraQxuFQOSfqyA/MBLJC1A9Aw1UjBFBzcS1ILXTwWb+D2CJOKI3ZKUttg6hm4Ydr6yaQPc7G/swqPlOCgo0YWmrg9t12IizetxxGwgn3sFtDjN0xNienFY99q1KHid8CJT/khFbmh0ymV9W970s=
+before_install: cd cmd/k8sCapcity/
 script:
   - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $GOPATH/bin v${GOLANGCI_LINT_VERSION}
   - golangci-lint run
-  - ./tests.sh
+  - ../../test/tests.sh
 deploy:
   - provider: script
     skip_cleanup: true
@@ -20,4 +21,4 @@ deploy:
       tags: true
       condition: "$TRAVIS_OS_NAME = linux"
 after_deploy:
-  - ./after_deploy.sh
+  - ./build/after_deploy.sh
