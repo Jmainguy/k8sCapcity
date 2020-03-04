@@ -31,7 +31,7 @@ func runDaemonMode(clusterInfo ClusterInfo) {
 	daemonLog.EventModule = "k8s_quota"
 	daemonLog.EventProvider = "k8sCapcity"
 	daemonLog.EventType = "info"
-	daemonLog.EventVersion = "03/02/2020-01"
+	daemonLog.EventVersion = "03/04/2020-01"
 	daemonLog.NodeLabel = clusterInfo.NodeLabel
 	daemonLog.ResourceQuotaCPURequestCores = clusterInfo.RqclusterAllocatedRequestsCPU.Value()
 	daemonLog.ResourceQuotaCPURequestMilliCores = clusterInfo.RqclusterAllocatedRequestsCPU.ScaledValue(resource.Milli)
@@ -49,12 +49,24 @@ func runDaemonMode(clusterInfo ClusterInfo) {
 	daemonLog.AllocatableCPUNminusone = clusterInfo.ClusterAllocatableCPU.Value() - clusterInfo.NminusCPU.Value()
 	daemonLog.AllocatablePods = clusterInfo.ClusterAllocatablePods.Value()
 	daemonLog.AllocatablePodsNminusone = clusterInfo.ClusterAllocatablePods.Value() - clusterInfo.NminusPods.Value()
-	daemonLog.OversubscriptionFactorMemoryRequest = float64(daemonLog.ResourceQuotaMemoryRequest) / float64(daemonLog.AllocatableMemory)
-	daemonLog.OversubscriptionFactorMemoryRequestNminusone = float64(daemonLog.ResourceQuotaMemoryRequest) / float64(daemonLog.AllocatableMemoryNminusone)
-	daemonLog.OversubscriptionFactorCPURequest = float64(daemonLog.ResourceQuotaCPURequestMilliCores) / float64(clusterInfo.ClusterAllocatableCPU.ScaledValue(resource.Milli))
-	daemonLog.OversubscriptionFactorCPURequestNminusone = float64(daemonLog.ResourceQuotaCPURequestMilliCores) / float64(clusterInfo.ClusterAllocatableCPU.ScaledValue(resource.Milli)-clusterInfo.NminusCPU.ScaledValue(resource.Milli))
-	daemonLog.OversubscriptionFactorPods = float64(daemonLog.ResourceQuotaPods) / float64(daemonLog.AllocatablePods)
-	daemonLog.OversubscriptionFactorPodsNminusone = float64(daemonLog.ResourceQuotaPods) / float64(daemonLog.AllocatablePodsNminusone)
+	daemonLog.SubscriptionFactorMemoryRequest = float64(daemonLog.ResourceQuotaMemoryRequest) / float64(daemonLog.AllocatableMemory)
+	daemonLog.SubscriptionFactorMemoryRequestNminusone = float64(daemonLog.ResourceQuotaMemoryRequest) / float64(daemonLog.AllocatableMemoryNminusone)
+	daemonLog.SubscriptionFactorCPURequest = float64(daemonLog.ResourceQuotaCPURequestMilliCores) / float64(clusterInfo.ClusterAllocatableCPU.ScaledValue(resource.Milli))
+	daemonLog.SubscriptionFactorCPURequestNminusone = float64(daemonLog.ResourceQuotaCPURequestMilliCores) / float64(clusterInfo.ClusterAllocatableCPU.ScaledValue(resource.Milli)-clusterInfo.NminusCPU.ScaledValue(resource.Milli))
+	daemonLog.SubscriptionFactorPods = float64(daemonLog.ResourceQuotaPods) / float64(daemonLog.AllocatablePods)
+	daemonLog.SubscriptionFactorPodsNminusone = float64(daemonLog.ResourceQuotaPods) / float64(daemonLog.AllocatablePodsNminusone)
+	daemonLog.UtilizationFactorPodsTotal = float64(clusterInfo.ClusterUsedPods) / float64(daemonLog.AllocatablePods)
+	daemonLog.UtilizationFactorPodsTotalNminusone = float64(clusterInfo.ClusterUsedPods) / float64(daemonLog.AllocatablePodsNminusone)
+	daemonLog.UtilizationFactorMemoryRequestsTotal = float64(daemonLog.ContainerResourceMemoryRequest) / float64(daemonLog.AllocatableMemory)
+	daemonLog.UtilizationFactorMemoryRequestsTotalNminusone = float64(daemonLog.ContainerResourceMemoryRequest) / float64(daemonLog.AllocatableMemoryNminusone)
+	daemonLog.UtilizationFactorCPURequestsTotal = float64(clusterInfo.ClusterUsedCPURequests.Value()) / float64(daemonLog.AllocatableCPU)
+	daemonLog.UtilizationFactorCPURequestsTotalNminusone = float64(clusterInfo.ClusterUsedCPURequests.Value()) / float64(daemonLog.AllocatableCPUNminusone)
+	daemonLog.AvailableMemoryRequest = daemonLog.AllocatableMemory - daemonLog.ContainerResourceMemoryRequest
+	daemonLog.AvailableMemoryRequestNminusone = daemonLog.AllocatableMemoryNminusone - daemonLog.ContainerResourceMemoryRequest
+	daemonLog.AvailableCPURequest = daemonLog.AllocatableCPU - daemonLog.ContainerResourceCPURequestCores
+	daemonLog.AvailableCPURequestNminusone = daemonLog.AllocatableCPUNminusone - daemonLog.ContainerResourceCPURequestCores
+	daemonLog.AvailablePods = daemonLog.AllocatablePods - daemonLog.ContainerResourcePods
+	daemonLog.AvailablePodsNminusone = daemonLog.AllocatablePodsNminusone - daemonLog.ContainerResourcePods
 	result, err := json.Marshal(daemonLog)
 	check(err)
 	fmt.Println(string(result))
