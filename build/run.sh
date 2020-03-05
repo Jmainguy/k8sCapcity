@@ -1,7 +1,7 @@
 #!/bin/sh
-tar zxvf /usr/sbin/k8sCapcity_Linux_x86_64.tar.gz -C /usr/sbin/
+tar zxvf /opt/k8sCapcity_Linux_x86_64.tar.gz -C /opt/
 if [ -z "$NODELABEL" ]; then
-    /usr/sbin/k8sCapcity --daemon
+    /opt/k8sCapcity --daemon
 else
-    /usr/sbin/k8sCapcity --daemon --nodelabel $NODELABEL
+    /opt/k8sCapcity --daemon --nodelabel $NODELABEL
 fi

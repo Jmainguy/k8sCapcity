@@ -12,3 +12,13 @@ spec:
       containers:
         - name: k8scapcity
           image: 'hub.soh.re/k8scapcity:v0.2.0'
+          env:
+          - name: NODELABEL
+            value: node-role.kubernetes.io/compute=true
+          resources:
+            limits:
+              cpu: "1"
+              memory: 1Gi
+            requests:
+              cpu: 200m
+              memory: 200Mi
