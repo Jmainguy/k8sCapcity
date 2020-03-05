@@ -5,4 +5,3 @@ if [ $FormatCheck -gt 0 ]; then
     echo "gofmt -w *.go your code please."
     exit 1
 fi
-go test -v
