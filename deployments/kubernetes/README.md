@@ -1,6 +1,7 @@
 # Deploy to openshift
 ```/bin/bash
 oc new-project k8scapcity
+oc create -f serviceAccount.yaml
 oc create -f clusterRole.yaml
 oc create -f clusterRoleBinding.yaml
 oc create -f deployment.yaml
