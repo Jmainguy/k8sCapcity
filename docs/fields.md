@@ -31,12 +31,12 @@ Allocatable resources are what kubernetes uses for scheduling pods into nodes. A
 
 | Metric Name                           | Unit  | Formula / Description                                                 |
 | ------------------------------------- | ----- | --------------------------------------------------------------------- |
-| k8s_quota.alloctable.pods             | none  | AppNodes_count * max_pods                                             |
-| k8s_quota.alloctable.cpu              | cores | AppNode1_allocatable_cpu_cores + ... + AppNodeN_allocatable_cpu_cores |
-| k8s_quota.alloctable.memory           | bytes | AppNode1_allocatable_memory + ... + AppNodeN_allocatable_memory       |
-| k8s_quota.alloctable.pods.nminusone   | none  | k8s_quota.alloctable.pods - Largest_node_max_pods                     |
-| k8s_quota.alloctable.cpu.nminusone    | cores | k8s_quota.alloctable.cpu - Largest_node_allocatable_cpu               |
-| k8s_quota.alloctable.memory.nminusone | bytes | k8s_quota.alloctable.memory - Largest_node_allocatable_memory         |
+| k8s_quota.alloctable.pods.total       | none  | AppNodes_count * max_pods                                             |
+| k8s_quota.alloctable.cpu.total        | cores | AppNode1_allocatable_cpu_cores + ... + AppNodeN_allocatable_cpu_cores |
+| k8s_quota.alloctable.memory.total     | bytes | AppNode1_allocatable_memory + ... + AppNodeN_allocatable_memory       |
+| k8s_quota.alloctable.pods.nminusone   | none  | k8s_quota.alloctable.pods.total - Largest_node_max_pods               |
+| k8s_quota.alloctable.cpu.nminusone    | cores | k8s_quota.alloctable.cpu.total - Largest_node_allocatable_cpu         |
+| k8s_quota.alloctable.memory.nminusone | bytes | k8s_quota.alloctable.memory.total - Largest_node_allocatable_memory   |
 
 ## ResourceQuota Resources
 
@@ -66,14 +66,14 @@ Count of non-terminated pods on nodes and the resources consuming according to t
 
 The utilization factor is the percentage (0-1) of allocatable resources in use from the various objects in kubernetes that consume resources.  Essentially it is the sum of all containers in a pod manifest/spec by resource component divided by the allocatable resource components. (This is not actual percent usage of say cpu)
 
-| Metric Name                                                 | Unit    | Formula / Description                                                               |
-| ----------------------------------------------------------- | ------- | ----------------------------------------------------------------------------------- |
-| k8s_quota.utilization_factor.pods.total                     | percent | k8s_quota.container_resource.pods / k8s_quota.alloctable.pods                       |
-| k8s_quota.utilization_factor.cpu_request.total              | percent | k8s_quota.container_resource.cpu_request.cores / k8s_quota.alloctable.cpu           |
-| k8s_quota.utilization_factor.memory_request.total           | percent | k8s_quota.container_resource.memory_request / k8s_quota.alloctable.memory           |
-| k8s_quota.utilization_factor.pods.total.nminusone           | percent | k8s_quota.container_resource.pods / k8s_quota.alloctable.pods.nminusone             |
-| k8s_quota.utilization_factor.cpu_request.total.nminusone    | percent | k8s_quota.container_resource.cpu_request.cores / k8s_quota.alloctable.cpu.nminusone |
-| k8s_quota.utilization_factor.memory_request.total.nminusone | percent | k8s_quota.container_resource.memory_request / k8s_quota.alloctable.memory.nminusone |
+| Metric Name                                           | Unit    | Formula / Description                                                               |
+| ----------------------------------------------------- | ------- | ----------------------------------------------------------------------------------- |
+| k8s_quota.utilization_factor.pods.total               | percent | k8s_quota.container_resource.pods / k8s_quota.alloctable.pods.total                 |
+| k8s_quota.utilization_factor.cpu_request.total        | percent | k8s_quota.container_resource.cpu_request.cores / k8s_quota.alloctable.cpu.total     |
+| k8s_quota.utilization_factor.memory_request.total     | percent | k8s_quota.container_resource.memory_request / k8s_quota.alloctable.memory.total     |
+| k8s_quota.utilization_factor.pods.nminusone           | percent | k8s_quota.container_resource.pods / k8s_quota.alloctable.pods.nminusone             |
+| k8s_quota.utilization_factor.cpu_request.nminusone    | percent | k8s_quota.container_resource.cpu_request.cores / k8s_quota.alloctable.cpu.nminusone |
+| k8s_quota.utilization_factor.memory_request.nminusone | percent | k8s_quota.container_resource.memory_request / k8s_quota.alloctable.memory.nminusone |
 
 There are also per node utilization factors to quickly see completely full nodes per resource component.
 
@@ -81,14 +81,14 @@ There are also per node utilization factors to quickly see completely full nodes
 
 The subscription factor is the "percentage" or ratio in which resourcequota has been distributed compared to the actual allocatable resources.  Essentially it is the sum of all resourcequotas divided by the allocatable resources.  In a "perfect" cluster with every deployment being exactly blue/green (A deployment requiring 2*N where N is the number of resources required) a "full" cluster would have a subscription factor of 2.
 
-| Metric Name                                                  | Unit    | Formula / Description                                                           |
-| ------------------------------------------------------------ | ------- | ------------------------------------------------------------------------------- |
-| k8s_quota.subscription_factor.pods.total                     | percent | k8s_quota.resource_quota.pods / k8s_quota.alloctable.pods                       |
-| k8s_quota.subscription_factor.cpu_request.total              | percent | k8s_quota.resource_quota.cpu_request.cores / k8s_quota.alloctable.cpu           |
-| k8s_quota.subscription_factor.memory_request.total           | percent | k8s_quota.resource_quota.memory_request / k8s_quota.alloctable.memory           |
-| k8s_quota.subscription_factor.pods.total.nminusone           | percent | k8s_quota.resource_quota.pods / k8s_quota.alloctable.pods.nminusone             |
-| k8s_quota.subscription_factor.cpu_request.total.nminusone    | percent | k8s_quota.resource_quota.cpu_request.cores / k8s_quota.alloctable.cpu.nminusone |
-| k8s_quota.subscription_factor.memory_request.total.nminusone | percent | k8s_quota.resource_quota.memory_request / k8s_quota.alloctable.memory.nminusone |
+| Metric Name                                            | Unit    | Formula / Description                                                           |
+| ------------------------------------------------------ | ------- | ------------------------------------------------------------------------------- |
+| k8s_quota.subscription_factor.pods.total               | percent | k8s_quota.resource_quota.pods / k8s_quota.alloctable.pods.total                 |
+| k8s_quota.subscription_factor.cpu_request.total        | percent | k8s_quota.resource_quota.cpu_request.cores / k8s_quota.alloctable.cpu.total     |
+| k8s_quota.subscription_factor.memory_request.total     | percent | k8s_quota.resource_quota.memory_request / k8s_quota.alloctable.memory.total     |
+| k8s_quota.subscription_factor.pods.total.nminusone     | percent | k8s_quota.resource_quota.pods / k8s_quota.alloctable.pods.nminusone             |
+| k8s_quota.subscription_factor.cpu_request.nminusone    | percent | k8s_quota.resource_quota.cpu_request.cores / k8s_quota.alloctable.cpu.nminusone |
+| k8s_quota.subscription_factor.memory_request.nminusone | percent | k8s_quota.resource_quota.memory_request / k8s_quota.alloctable.memory.nminusone |
 
 ## Available Resources
 
@@ -96,9 +96,9 @@ The remaining amount of a resource in aggregate across a cluster irregardless of
 
 | Metric Name                                  | Unit  | Formula / Description                                                               |
 | -------------------------------------------- | ----- | ----------------------------------------------------------------------------------- |
-| k8s_quota.available.pods                     | none  | k8s_quota.alloctable.pods - k8s_quota.container_resource.pods                       |
-| k8s_quota.available.cpu_request              | cores | k8s_quota.alloctable.cpu - k8s_quota.container_resource.cpu_request.cores           |
-| k8s_quota.available.memory_request           | bytes | k8s_quota.alloctable.memory - k8s_quota.container_resource.memory_request           |
+| k8s_quota.available.pods.total               | none  | k8s_quota.alloctable.pods.total - k8s_quota.container_resource.pods                 |
+| k8s_quota.available.cpu_request.total        | cores | k8s_quota.alloctable.cpu.total - k8s_quota.container_resource.cpu_request.cores     |
+| k8s_quota.available.memory_request.total     | bytes | k8s_quota.alloctable.memory.total - k8s_quota.container_resource.memory_request     |
 | k8s_quota.available.pods.nminusone           | none  | k8s_quota.alloctable.pods.nminusone - k8s_quota.container_resource.pods             |
 | k8s_quota.available.cpu_request.nminusone    | cores | k8s_quota.alloctable.cpu.nminusone - k8s_quota.container_resource.cpu_request.cores |
 | k8s_quota.available.memory_request.nminusone | bytes | k8s_quota.alloctable.memory.nminusone - k8s_quota.container_resource.memory_request |
@@ -119,17 +119,17 @@ $ k8sCapcity -json -nodelabel 'node-role.kubernetes.io/compute=true' | jq '.'
   "k8s_quota.resource_quota.memory_request": 6515465388032,
   "k8s_quota.resource_quota.memory_limit": 11065983238144,
   "k8s_quota.resource_quota.pods": 13476,
-  "k8s_quota.subscription_factor.memory.request": 0.8875476401450748,
+  "k8s_quota.subscription_factor.memory.request.total": 0.8875476401450748,
   "k8s_quota.subscription_factor.memory.request.nminusone": 0.9213110353719374,
-  "k8s_quota.subscription_factor.cpu.request": 3.2144351464435146,
+  "k8s_quota.subscription_factor.cpu.request.total": 3.2144351464435146,
   "k8s_quota.subscription_factor.cpu.request.nminusone": 3.4683972911963883,
-  "k8s_quota.subscription_factor.pods": 6.097737556561086,
+  "k8s_quota.subscription_factor.pods.total": 6.097737556561086,
   "k8s_quota.subscription_factor.pods.nminusone": 6.4788461538461535,
-  "k8s_quota.alloctable.memory": 7340975394816,
+  "k8s_quota.alloctable.memory.total": 7340975394816,
   "k8s_quota.alloctable.memory.nminusone": 7071949795328,
-  "k8s_quota.alloctable.cpu": 956,
+  "k8s_quota.alloctable.cpu.total": 956,
   "k8s_quota.alloctable.cpu.nminusone": 886,
-  "k8s_quota.alloctable.pods": 2210,
+  "k8s_quota.alloctable.pods.total": 2210,
   "k8s_quota.alloctable.pods.nminusone": 2080,
   "k8s_quota.container_resource.cpu_request.cores": 730,
   "k8s_quota.container_resource.cpu_request.millicores": 729644,
@@ -157,7 +157,7 @@ $ k8sCapcity -json -nodelabel 'node-role.kubernetes.io/compute=true' | jq '.'
     "ocp-app-01q.lab1.bwnet.us": 0.7076923076923077
   },
   "k8s_quota.utilization_factor.pods.total": 0.6800904977375566,
-  "k8s_quota.utilization_factor.pods.total.nminusone": 0.7225961538461538,
+  "k8s_quota.utilization_factor.pods.nminusone": 0.7225961538461538,
   "k8s_quota.utilization_factor.memory_request": {
     "ocp-app-01a.lab1.bandwidthclec.local": 0.1604980278677086,
     "ocp-app-01b.lab1.bandwidthclec.local": 0.20450092541493772,
@@ -178,7 +178,7 @@ $ k8sCapcity -json -nodelabel 'node-role.kubernetes.io/compute=true' | jq '.'
     "ocp-app-01q.lab1.bwnet.us": 0.1722227230809698
   },
   "k8s_quota.utilization_factor.memory_request.total": 0.3310606639484473,
-  "k8s_quota.utilization_factor.memory_request.total.nminusone": 0.3436546155690407,
+  "k8s_quota.utilization_factor.memory_request.nminusone": 0.3436546155690407,
   "k8s_quota.utilization_factor.cpu_request": {
     "ocp-app-01a.lab1.bandwidthclec.local": 0.75,
     "ocp-app-01b.lab1.bandwidthclec.local": 0.6875,
@@ -199,12 +199,12 @@ $ k8sCapcity -json -nodelabel 'node-role.kubernetes.io/compute=true' | jq '.'
     "ocp-app-01q.lab1.bwnet.us": 0.7142857142857143
   },
   "k8s_quota.utilization_factor.cpu_request.total": 0.7635983263598326,
-  "k8s_quota.utilization_factor.cpu_request.total.nminusone": 0.8239277652370203,
-  "k8s_quota.available.memory_request": 4910667206579,
+  "k8s_quota.utilization_factor.cpu_request.nminusone": 0.8239277652370203,
+  "k8s_quota.available.memory_request.total": 4910667206579,
   "k8s_quota.available.memory_request.nminusone": 4641641607091,
-  "k8s_quota.available.cpu_request": 226,
+  "k8s_quota.available.cpu_request.total": 226,
   "k8s_quota.available.cpu_request.nminusone": 156,
-  "k8s_quota.available.pods": 707,
+  "k8s_quota.available.pods.total": 707,
   "k8s_quota.available.pods.nminusone": 577
 }
 ```
