@@ -22,3 +22,5 @@ spec:
             requests:
               cpu: 200m
               memory: 200Mi
+      serviceAccount: k8scapcity
+      serviceAccountName: k8scapcity

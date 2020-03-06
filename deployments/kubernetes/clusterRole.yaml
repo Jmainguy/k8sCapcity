@@ -8,7 +8,7 @@ rules:
   attributeRestrictions: null
   resources:
   - namespaces
-  - resourequotas
+  - resourcequotas
   - nodes
   - pods
   verbs:

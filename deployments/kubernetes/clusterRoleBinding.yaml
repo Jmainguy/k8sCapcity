@@ -7,7 +7,7 @@ roleRef:
   name: k8scapcity
 subjects:
 - kind: ServiceAccount
-  name: default
+  name: k8scapcity
   namespace: k8scapcity
 userNames:
-- system:serviceaccount:k8scapcity:default
+- system:serviceaccount:k8scapcity:k8scapcity
