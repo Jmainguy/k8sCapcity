@@ -1,6 +1,6 @@
 #!/bin/bash
-VERSION=0.2.1
-docker build -t=push.soh.re/k8scapcity:0.2.1
-docker tag push.soh.re/k8scapcity:0.2.1 push.soh.re/k8scapcity:latest
-docker push push.soh.re/k8scapcity:0.2.1
-docker push push.soh.re/k8scapcity:0.2.1
+VERSION=v0.2.1
+docker build -t=push.soh.re/k8scapcity:$VERSION .
+docker tag push.soh.re/k8scapcity:$VERSION push.soh.re/k8scapcity:latest
+docker push push.soh.re/k8scapcity:$VERSION
+docker push push.soh.re/k8scapcity:latest
