@@ -20,12 +20,11 @@ script:
 - ../../test/tests.sh
 - go test -v -covermode=count -coverprofile=coverage.out
 - $HOME/gopath/bin/goveralls -coverprofile=coverage.out -service=travis-ci -repotoken $COVERALLS_TOKEN
+- go mod tidy
 deploy:
 - provider: script
   skip_cleanup: true
-  script:
-  - go mod tidy
-  - curl -sL https://git.io/goreleaser | bash
+  script: curl -sL https://git.io/goreleaser | bash
   on:
     tags: true
     condition: "$TRAVIS_OS_NAME = linux"
