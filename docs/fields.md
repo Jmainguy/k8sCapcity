@@ -86,7 +86,7 @@ The subscription factor is the "percentage" or ratio in which resourcequota has 
 | k8s_quota.subscription_factor.pods.total               | percent | k8s_quota.resource_quota.pods / k8s_quota.alloctable.pods.total                 |
 | k8s_quota.subscription_factor.cpu_request.total        | percent | k8s_quota.resource_quota.cpu_request.cores / k8s_quota.alloctable.cpu.total     |
 | k8s_quota.subscription_factor.memory_request.total     | percent | k8s_quota.resource_quota.memory_request / k8s_quota.alloctable.memory.total     |
-| k8s_quota.subscription_factor.pods.total.nminusone     | percent | k8s_quota.resource_quota.pods / k8s_quota.alloctable.pods.nminusone             |
+| k8s_quota.subscription_factor.pods.nminusone           | percent | k8s_quota.resource_quota.pods / k8s_quota.alloctable.pods.nminusone             |
 | k8s_quota.subscription_factor.cpu_request.nminusone    | percent | k8s_quota.resource_quota.cpu_request.cores / k8s_quota.alloctable.cpu.nminusone |
 | k8s_quota.subscription_factor.memory_request.nminusone | percent | k8s_quota.resource_quota.memory_request / k8s_quota.alloctable.memory.nminusone |
 
