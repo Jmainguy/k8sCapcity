@@ -43,17 +43,20 @@ type NodeInfo struct {
 
 // ContainerInfo : Information about the container
 type ContainerInfo struct {
-	Name                  string            `json:"name"`
-	Pod                   string            `json:"pod"`
-	CPURequestsMilliCores int64             `json:"cpu_requests.millicores"`
-	CPURequestsCores      float64           `json:"cpu_requests.cores"`
-	CPULimitsMilliCores   int64             `json:"cpu_limits.millicores"`
-	CPULimitsCores        float64           `json:"cpu_limits.cores"`
-	MemoryRequests        resource.Quantity `json:"memory_requests"`
-	MemoryLimits          resource.Quantity `json:"memory_limits"`
-	CPUUsedMilliCores     int64             `json:"cpu_used.millicores"`
-	CPUUsedCores          float64           `json:"cpu_used.cores"`
-	MemoryUsed            resource.Quantity `json:"memory_used"`
+	Name                  string  `json:"name"`
+	Pod                   string  `json:"pod"`
+	CPURequestsMilliCores int64   `json:"cpu_requests.millicores"`
+	CPULimitsMilliCores   int64   `json:"cpu_limits.millicores"`
+	MemoryRequests        int64   `json:"memory_requests.bytes"`
+	MemoryLimits          int64   `json:"memory_limits.bytes"`
+	CPUUsedMilliCores     int64   `json:"cpu_used.millicores"`
+	MemoryUsed            int64   `json:"memory_used.bytes"`
+	MemoryRequestsMiB     int64   `json:"memory_requests.mebibytes"`
+	MemoryLimitsMiB       int64   `json:"memory_limits.mebibytes"`
+	MemoryUsedMiB         int64   `json:"memory_used.mebibytes"`
+	CPURequestsCores      float64 `json:"cpu_requests.cores"`
+	CPULimitsCores        float64 `json:"cpu_limits.cores"`
+	CPUUsedCores          float64 `json:"cpu_used.cores"`
 }
 
 // DaemonLog : Json to print out about metrics we gathered
@@ -105,17 +108,20 @@ type DaemonLog struct {
 
 // NamespaceInfo : Information about the namespace
 type NamespaceInfo struct {
-	Name                           string            `json:"k8s_quota.namespace.name"`
-	NamespacePods                  map[string]*Pod   `json:"k8s_quota.namespace.pods"`
-	NamespaceMemoryLimits          resource.Quantity `json:"k8s_quota.namespace.memory_limits"`
-	NamespaceMemoryRequests        resource.Quantity `json:"k8s_quota.namespace.memory_requests"`
-	NamespaceMemoryUsed            resource.Quantity `json:"k8s_quota.namespace.memory_used"`
-	NamespaceCPULimitsCores        float64           `json:"k8s_quota.namespace.cpu_limits.cores"`
-	NamespaceCPULimitsMilliCores   int64             `json:"k8s_quota.namespace.cpu_limits.millicores"`
-	NamespaceCPURequestsCores      float64           `json:"k8s_quota.namespace.cpu_requests.cores"`
-	NamespaceCPURequestsMilliCores int64             `json:"k8s_quota.namespace.cpu_requests.millicores"`
-	NamespaceCPUUsedCores          float64           `json:"k8s_quota.namespace.cpu_used.cores"`
-	NamespaceCPUUsedMilliCores     int64             `json:"k8s_quota.namespace.cpu_used.millicores"`
+	Name                           string          `json:"k8s_quota.namespace.name"`
+	NamespacePods                  map[string]*Pod `json:"k8s_quota.namespace.pods"`
+	NamespaceMemoryLimits          int64           `json:"k8s_quota.namespace.memory_limits.bytes"`
+	NamespaceMemoryRequests        int64           `json:"k8s_quota.namespace.memory_requests.bytes"`
+	NamespaceMemoryUsed            int64           `json:"k8s_quota.namespace.memory_used.bytes"`
+	NamespaceCPULimitsMilliCores   int64           `json:"k8s_quota.namespace.cpu_limits.millicores"`
+	NamespaceCPURequestsMilliCores int64           `json:"k8s_quota.namespace.cpu_requests.millicores"`
+	NamespaceCPUUsedMilliCores     int64           `json:"k8s_quota.namespace.cpu_used.millicores"`
+	NamespaceMemoryLimitsGiB       float64         `json:"k8s_quota.namespace.memory_limits.gibibytes"`
+	NamespaceMemoryRequestsGiB     float64         `json:"k8s_quota.namespace.memory_requests.gibibytes"`
+	NamespaceMemoryUsedGiB         float64         `json:"k8s_quota.namespace.memory_used.gibibytes"`
+	NamespaceCPULimitsCores        float64         `json:"k8s_quota.namespace.cpu_limits.cores"`
+	NamespaceCPURequestsCores      float64         `json:"k8s_quota.namespace.cpu_requests.cores"`
+	NamespaceCPUUsedCores          float64         `json:"k8s_quota.namespace.cpu_used.cores"`
 }
 
 // Pod : A pod full of containers

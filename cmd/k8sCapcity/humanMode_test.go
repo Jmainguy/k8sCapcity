@@ -32,7 +32,7 @@ func TestToGib(t *testing.T) {
 	memory := resource.MustParse("1024Mi")
 	memoryGib := toGib(memory)
 	if memoryGib != 1 {
-		t.Errorf("Expected 1, got %d", memoryGib)
+		t.Errorf("Expected 1, got %f", memoryGib)
 	}
 }
 
