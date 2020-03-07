@@ -8,6 +8,8 @@ import (
 	"encoding/json"
 	"fmt"
 	log "github.com/sirupsen/logrus"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -50,6 +52,14 @@ func getPodMetrics(clientset *kubernetes.Clientset) (podMetricList *metricsv1b1.
 	return podMetricList
 }
 
+func getPodList(clientset *kubernetes.Clientset, nameSpace *string) (pods *corev1.PodList) {
+	pods, err := clientset.CoreV1().Pods(*nameSpace).List(metav1.ListOptions{})
+	if err != nil {
+		panic(err.Error())
+	}
+	return pods
+}
+
 func main() {
 	// Log as JSON instead of the default ASCII formatter.
 	log.SetFormatter(&log.JSONFormatter{})
@@ -68,7 +78,6 @@ func main() {
 	jsonMode := flag.Bool("json", false, "Output information in json format")
 	flag.Parse()
 
-	containerInfo := make(map[string]ContainerInfo)
 	// use the current context in kubeconfig
 	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
 	if err != nil {
@@ -87,7 +96,12 @@ func main() {
 
 	// BreakOut to namespace if asked
 	if *nameSpace != "" {
-		namespaceMode(clientset, nameSpace, containerInfo)
+		nsInfo := gatherNamespaceInfo(clientset, nameSpace)
+		if *jsonMode {
+			namespaceJSONMode(nsInfo)
+		} else {
+			namespaceHumanMode(nsInfo)
+		}
 	}
 
 	// Gather info

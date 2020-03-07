@@ -6,6 +6,11 @@ import (
 	resource "k8s.io/apimachinery/pkg/api/resource"
 )
 
+func toGibFromMib(mib int64) (result float64) {
+	result = float64(mib) / 1024
+	return result
+}
+
 func toGib(rq resource.Quantity) (result int64) {
 	result = int64(float64(rq.ScaledValue(resource.Giga)) / 1.073741824)
 	return result
