@@ -68,6 +68,8 @@ func runDaemonMode(clusterInfo ClusterInfo) {
 	daemonLog.AvailablePodsTotal = daemonLog.AllocatablePodsTotal - daemonLog.ContainerResourcePods
 	daemonLog.AvailablePodsNminusone = daemonLog.AllocatablePodsNminusone - daemonLog.ContainerResourcePods
 	result, err := json.Marshal(daemonLog)
-	check(err)
+	if err != nil {
+		fmt.Printf("There was an error during json.Marshal, Error: %s\n", err)
+	}
 	fmt.Println(string(result))
 }
