@@ -29,10 +29,10 @@ type ClusterInfo struct {
 
 // NodeInfo : Information about the node
 type NodeInfo struct {
-	UsedPods           int64
 	AllocatableCPU     resource.Quantity
 	AllocatableMemory  resource.Quantity
 	AllocatablePods    resource.Quantity
+	UsedPods           int64
 	UsedCPU            resource.Quantity
 	UsedMemory         resource.Quantity
 	UsedMemoryRequests resource.Quantity

@@ -24,6 +24,20 @@ func TestHumanModeValidClusterInfo(t *testing.T) {
 		NminusMemory:                     resource.MustParse("1Gi"),
 		NminusPods:                       resource.MustParse("10"),
 		NodeLabel:                        "test=true",
+        NodeInfo:   map[string]NodeInfo{
+            "test-node": {
+                AllocatableCPU: resource.MustParse("16"),
+                AllocatableMemory: resource.MustParse("256Gi"),
+                AllocatablePods: resource.MustParse("1000"),
+                UsedPods: 10,
+                UsedCPU: resource.MustParse("1"),
+                UsedMemory: resource.MustParse("1Gi"),
+                UsedMemoryRequests: resource.MustParse("10Gi"),
+                UsedMemoryLimits: resource.MustParse("10Gi"),
+                UsedCPURequests: resource.MustParse("1"),
+                PrintOutput: true,
+            },
+        },
 	}
 	humanMode(clusterInfo)
 }
@@ -42,4 +56,21 @@ func TestToMib(t *testing.T) {
 	if memoryMib != 1024 {
 		t.Errorf("Expected 1024, got %d", memoryMib)
 	}
+}
+
+func TestToMibFromByte(t *testing.T) {
+    bytes := int64(1 * 1024 * 1024)
+    mib := toMibFromByte(bytes)
+    if mib != 1 {
+        t.Errorf("Expected 1, got %d", mib)
+    }
+}
+
+
+func TestToGibFromByte(t *testing.T) {
+    bytes := int64(1 * 1024 * 1024 * 1024)
+    gib := toGibFromByte(bytes)
+    if gib != 1 {
+        t.Errorf("Expected 1, got %f", gib)
+    }
 }
