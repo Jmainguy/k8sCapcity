@@ -1,7 +1,7 @@
 # k8sCapcity
 [![Go Report Card](https://goreportcard.com/badge/github.com/Jmainguy/k8sCapcity)](https://goreportcard.com/report/github.com/Jmainguy/k8sCapcity)
 [![Release](https://img.shields.io/github/release/Jmainguy/k8sCapcity.svg?style=flat-square)](https://github.com/Jmainguy/k8sCapcity/releases/latest)
-[![Coverage Status](https://coveralls.io/repos/github/Jmainguy/k8sCapcity/badge.svg?branch=master)](https://coveralls.io/github/Jmainguy/k8sCapcity?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/Jmainguy/k8sCapcity/badge.svg?branch=master&service=github)](https://coveralls.io/github/Jmainguy/k8sCapcity?branch=master)
 
 This command is designed to assist in capacity planning, by showing capacity
 
