@@ -22,6 +22,7 @@ script:
 - go test -v -covermode=count -coverprofile=coverage.out
 - $HOME/gopath/bin/goveralls -coverprofile=coverage.out -service=travis-ci -repotoken $COVERALLS_TOKEN
 - rm coverage.out
+- curl -X PURGE https://camo.githubusercontent.com/1a973e870b7a63366d40a4ac8da059d42e4a401a/68747470733a2f2f636f766572616c6c732e696f2f7265706f732f6769746875622f4a6d61696e6775792f6b3873436170636974792f62616467652e7376673f6272616e63683d6d617374657226736572766963653d676974687562
 deploy:
 - provider: script
   skip_cleanup: true
