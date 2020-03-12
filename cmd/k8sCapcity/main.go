@@ -98,9 +98,16 @@ func main() {
 	if *nameSpace != "" {
 		nsInfo := gatherNamespaceInfo(clientset, nameSpace)
 		if *jsonMode {
-			namespaceJSONMode(nsInfo)
+			result, err := json.Marshal(nsInfo)
+			check(err)
+			fmt.Println(string(result))
+			os.Exit(0)
 		} else {
-			namespaceHumanMode(nsInfo)
+			output := namespaceHumanMode(nsInfo)
+			for _, line := range output {
+				fmt.Println(line)
+			}
+			os.Exit(0)
 		}
 	}
 
