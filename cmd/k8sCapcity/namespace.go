@@ -1,12 +1,10 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	corev1 "k8s.io/api/core/v1"
 	resource "k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/client-go/kubernetes"
-	"os"
 )
 
 func gatherPodSpecInfo(pod corev1.Pod, nsInfo NamespaceInfo) NamespaceInfo {
@@ -39,9 +37,10 @@ func gatherNamespaceInfo(clientset *kubernetes.Clientset, nameSpace *string) Nam
 	podMetricList := getPodMetrics(clientset)
 	podList := getPodList(clientset, nameSpace)
 	nsInfo.NamespacePods = make(map[string]*Pod)
+	containerArray := make(map[string]ContainerInfo)
+	namespacePods := make(map[string]bool)
 	for _, metricPod := range podMetricList.Items {
 		if *nameSpace == metricPod.Namespace {
-			containerArray := make(map[string]ContainerInfo)
 			for _, container := range metricPod.Containers {
 				uniqueContainerName := fmt.Sprintf("%s-%s", metricPod.Name, container.Name)
 				c := &ContainerInfo{
@@ -56,13 +55,14 @@ func gatherNamespaceInfo(clientset *kubernetes.Clientset, nameSpace *string) Nam
 				nsInfo.NamespaceCPUUsedMilliCores = nsInfo.NamespaceCPUUsedMilliCores + container.Usage.Cpu().MilliValue()
 			}
 			nsInfo.NamespacePods[metricPod.Name] = &Pod{Containers: containerArray}
-			for _, pod := range podList.Items {
-				if pod.Name == metricPod.Name {
-					if pod.Status.Phase != "Failed" {
-						if pod.Status.Phase != "Succeeded" {
-							nsInfo = gatherPodSpecInfo(pod, nsInfo)
-						}
-					}
+			namespacePods[metricPod.Name] = true
+		}
+	}
+	for _, pod := range podList.Items {
+		if namespacePods[pod.Name] {
+			if pod.Status.Phase != "Failed" {
+				if pod.Status.Phase != "Succeeded" {
+					nsInfo = gatherPodSpecInfo(pod, nsInfo)
 				}
 			}
 		}
@@ -77,41 +77,34 @@ func gatherNamespaceInfo(clientset *kubernetes.Clientset, nameSpace *string) Nam
 	return nsInfo
 }
 
-func namespaceJSONMode(nsInfo NamespaceInfo) {
-	result, err := json.Marshal(nsInfo)
-	check(err)
-	fmt.Println(string(result))
-	os.Exit(0)
-}
-
-func namespaceHumanMode(nsInfo NamespaceInfo) {
-	fmt.Println("")
-	fmt.Println("================")
+func namespaceHumanMode(nsInfo NamespaceInfo) (output []string) {
+	output = append(output, fmt.Sprintf(""))
+	output = append(output, fmt.Sprintf("================"))
 	for podName, pods := range nsInfo.NamespacePods {
-		fmt.Printf("****Pod Name: %s****\n", podName)
+		output = append(output, fmt.Sprintf("****Pod Name: %s****", podName))
 		for _, container := range pods.Containers {
-			fmt.Println("================")
-			fmt.Printf("Container Name: %s\n", container.Name)
-			fmt.Println("----------------")
-			fmt.Printf("CPURequests: %v\n", container.CPURequestsCores)
-			fmt.Printf("MemoryRequests: %dMiB\n", toMibFromByte(container.MemoryRequests))
-			fmt.Printf("CPULimits: %v\n", container.CPULimitsCores)
-			fmt.Printf("MemoryLimits: %dMiB\n", toMibFromByte(container.MemoryLimits))
-			fmt.Println("----------------")
-			fmt.Printf("CPU Used: %dm\n", container.CPUUsedMilliCores)
-			fmt.Printf("Memory Used: %dMiB\n", toMibFromByte(container.MemoryUsed))
-			fmt.Println("================")
+			output = append(output, fmt.Sprintf("================"))
+			output = append(output, fmt.Sprintf("Container Name: %s", container.Name))
+			output = append(output, fmt.Sprintf("----------------"))
+			output = append(output, fmt.Sprintf("CPURequests: %v", container.CPURequestsCores))
+			output = append(output, fmt.Sprintf("MemoryRequests: %dMiB", toMibFromByte(container.MemoryRequests)))
+			output = append(output, fmt.Sprintf("CPULimits: %v", container.CPULimitsCores))
+			output = append(output, fmt.Sprintf("MemoryLimits: %dMiB", toMibFromByte(container.MemoryLimits)))
+			output = append(output, fmt.Sprintf("----------------"))
+			output = append(output, fmt.Sprintf("CPU Used: %dm", container.CPUUsedMilliCores))
+			output = append(output, fmt.Sprintf("Memory Used: %dMiB", toMibFromByte(container.MemoryUsed)))
+			output = append(output, fmt.Sprintf("================"))
 		}
 	}
-	fmt.Printf("<><><><><>Sum Total for Namespace: %s<><><><><>\n", nsInfo.Name)
-	fmt.Println("----------------")
-	fmt.Printf("Namespace Total CPURequests: %v\n", nsInfo.NamespaceCPURequestsCores)
-	fmt.Printf("Namespace Total MemoryRequests: %vMiB (%.1fGiB)\n", toMibFromByte(nsInfo.NamespaceMemoryRequests), nsInfo.NamespaceMemoryRequestsGiB)
-	fmt.Printf("Namespace Total CPULimits: %v\n", nsInfo.NamespaceCPULimitsCores)
-	fmt.Printf("Namespace Total MemoryLimits: %vMiB (%.1fGiB)\n", toMibFromByte(nsInfo.NamespaceMemoryLimits), nsInfo.NamespaceMemoryLimitsGiB)
-	fmt.Println("----------------")
-	fmt.Printf("Namespace Total CPU Used: %v\n", nsInfo.NamespaceCPUUsedCores)
-	fmt.Printf("Namespace Total Memory Used: %dMiB (%.1fGiB)\n", toMibFromByte(nsInfo.NamespaceMemoryUsed), nsInfo.NamespaceMemoryUsedGiB)
+	output = append(output, fmt.Sprintf("<><><><><>Sum Total for Namespace: %s<><><><><>", nsInfo.Name))
+	output = append(output, fmt.Sprintf("----------------"))
+	output = append(output, fmt.Sprintf("Namespace Total CPURequests: %v", nsInfo.NamespaceCPURequestsCores))
+	output = append(output, fmt.Sprintf("Namespace Total MemoryRequests: %vMiB (%.1fGiB)", toMibFromByte(nsInfo.NamespaceMemoryRequests), nsInfo.NamespaceMemoryRequestsGiB))
+	output = append(output, fmt.Sprintf("Namespace Total CPULimits: %v", nsInfo.NamespaceCPULimitsCores))
+	output = append(output, fmt.Sprintf("Namespace Total MemoryLimits: %vMiB (%.1fGiB)", toMibFromByte(nsInfo.NamespaceMemoryLimits), nsInfo.NamespaceMemoryLimitsGiB))
+	output = append(output, fmt.Sprintf("----------------"))
+	output = append(output, fmt.Sprintf("Namespace Total CPU Used: %v", nsInfo.NamespaceCPUUsedCores))
+	output = append(output, fmt.Sprintf("Namespace Total Memory Used: %dMiB (%.1fGiB)", toMibFromByte(nsInfo.NamespaceMemoryUsed), nsInfo.NamespaceMemoryUsedGiB))
 
-	os.Exit(0)
+	return output
 }
