@@ -76,6 +76,7 @@ func main() {
 	nameSpace := flag.String("namespace", "", "Namespace to grab capacity usage from")
 	daemonMode := flag.Bool("daemon", false, "Run in daemon mode")
 	jsonMode := flag.Bool("json", false, "Output information in json format")
+	checkMode := flag.Bool("check", false, "Check kubernetes connection")
 	flag.Parse()
 
 	// use the current context in kubeconfig
@@ -92,6 +93,21 @@ func main() {
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		panic(err.Error())
+	}
+
+	if *checkMode {
+		nodes, err := clientset.CoreV1().Nodes().List(metav1.ListOptions{})
+		if err != nil {
+			panic(err.Error())
+		}
+
+		if len(nodes.Items) > 0 {
+			fmt.Println("ok")
+			os.Exit(0)
+		} else {
+			fmt.Println("Unable to List nodes")
+			os.Exit(1)
+		}
 	}
 
 	// BreakOut to namespace if asked
