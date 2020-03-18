@@ -124,7 +124,6 @@ func main() {
 
 	} else {
 		clusterInfo := gatherInfo(clientset, nodeLabel)
-		fmt.Println(len(clusterInfo.NodeInfo))
 		humanMode(clusterInfo)
 	}
 }

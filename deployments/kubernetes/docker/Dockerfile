@@ -1,6 +1,6 @@
 FROM busybox:latest
 LABEL maintainer="Jonathan Mainguy <jon@soh.re>"
-ENV release=v0.2.1
+ENV release=v0.2.3
 RUN mkdir /opt
 ADD run.sh /opt
 WORKDIR /opt

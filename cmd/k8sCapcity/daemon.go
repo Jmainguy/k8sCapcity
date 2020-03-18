@@ -49,18 +49,66 @@ func runDaemonMode(clusterInfo ClusterInfo) {
 	daemonLog.AllocatableCPUNminusone = clusterInfo.ClusterAllocatableCPU.Value() - clusterInfo.NminusCPU.Value()
 	daemonLog.AllocatablePodsTotal = clusterInfo.ClusterAllocatablePods.Value()
 	daemonLog.AllocatablePodsNminusone = clusterInfo.ClusterAllocatablePods.Value() - clusterInfo.NminusPods.Value()
-	daemonLog.SubscriptionFactorMemoryRequestTotal = float64(daemonLog.ResourceQuotaMemoryRequest) / float64(daemonLog.AllocatableMemoryTotal)
-	daemonLog.SubscriptionFactorMemoryRequestNminusone = float64(daemonLog.ResourceQuotaMemoryRequest) / float64(daemonLog.AllocatableMemoryNminusone)
-	daemonLog.SubscriptionFactorCPURequestTotal = float64(daemonLog.ResourceQuotaCPURequestMilliCores) / float64(clusterInfo.ClusterAllocatableCPU.ScaledValue(resource.Milli))
-	daemonLog.SubscriptionFactorCPURequestNminusone = float64(daemonLog.ResourceQuotaCPURequestMilliCores) / float64(clusterInfo.ClusterAllocatableCPU.ScaledValue(resource.Milli)-clusterInfo.NminusCPU.ScaledValue(resource.Milli))
-	daemonLog.SubscriptionFactorPodsTotal = float64(daemonLog.ResourceQuotaPods) / float64(daemonLog.AllocatablePodsTotal)
-	daemonLog.SubscriptionFactorPodsNminusone = float64(daemonLog.ResourceQuotaPods) / float64(daemonLog.AllocatablePodsNminusone)
-	daemonLog.UtilizationFactorPodsTotal = float64(clusterInfo.ClusterUsedPods) / float64(daemonLog.AllocatablePodsTotal)
-	daemonLog.UtilizationFactorPodsNminusone = float64(clusterInfo.ClusterUsedPods) / float64(daemonLog.AllocatablePodsNminusone)
-	daemonLog.UtilizationFactorMemoryRequestsTotal = float64(daemonLog.ContainerResourceMemoryRequest) / float64(daemonLog.AllocatableMemoryTotal)
-	daemonLog.UtilizationFactorMemoryRequestsNminusone = float64(daemonLog.ContainerResourceMemoryRequest) / float64(daemonLog.AllocatableMemoryNminusone)
-	daemonLog.UtilizationFactorCPURequestsTotal = float64(clusterInfo.ClusterUsedCPURequests.Value()) / float64(daemonLog.AllocatableCPUTotal)
-	daemonLog.UtilizationFactorCPURequestsNminusone = float64(clusterInfo.ClusterUsedCPURequests.Value()) / float64(daemonLog.AllocatableCPUNminusone)
+	if float64(daemonLog.AllocatableMemoryTotal) == 0 {
+		daemonLog.SubscriptionFactorMemoryRequestTotal = 0
+	} else {
+		daemonLog.SubscriptionFactorMemoryRequestTotal = float64(daemonLog.ResourceQuotaMemoryRequest) / float64(daemonLog.AllocatableMemoryTotal)
+	}
+	if daemonLog.AllocatableMemoryNminusone == 0 {
+		daemonLog.SubscriptionFactorMemoryRequestNminusone = 0
+	} else {
+		daemonLog.SubscriptionFactorMemoryRequestNminusone = float64(daemonLog.ResourceQuotaMemoryRequest) / float64(daemonLog.AllocatableMemoryNminusone)
+	}
+	if float64(clusterInfo.ClusterAllocatableCPU.ScaledValue(resource.Milli)) == 0 {
+		daemonLog.SubscriptionFactorCPURequestTotal = 0
+	} else {
+		daemonLog.SubscriptionFactorCPURequestTotal = float64(daemonLog.ResourceQuotaCPURequestMilliCores) / float64(clusterInfo.ClusterAllocatableCPU.ScaledValue(resource.Milli))
+	}
+	if float64(clusterInfo.ClusterAllocatableCPU.ScaledValue(resource.Milli)-clusterInfo.NminusCPU.ScaledValue(resource.Milli)) == 0 {
+		daemonLog.SubscriptionFactorCPURequestNminusone = 0
+	} else {
+		daemonLog.SubscriptionFactorCPURequestNminusone = float64(daemonLog.ResourceQuotaCPURequestMilliCores) / float64(clusterInfo.ClusterAllocatableCPU.ScaledValue(resource.Milli)-clusterInfo.NminusCPU.ScaledValue(resource.Milli))
+	}
+	if float64(daemonLog.AllocatablePodsTotal) == 0 {
+		daemonLog.SubscriptionFactorPodsTotal = 0
+	} else {
+		daemonLog.SubscriptionFactorPodsTotal = float64(daemonLog.ResourceQuotaPods) / float64(daemonLog.AllocatablePodsTotal)
+	}
+	if float64(daemonLog.AllocatablePodsNminusone) == 0 {
+		daemonLog.SubscriptionFactorPodsNminusone = 0
+	} else {
+		daemonLog.SubscriptionFactorPodsNminusone = float64(daemonLog.ResourceQuotaPods) / float64(daemonLog.AllocatablePodsNminusone)
+	}
+	if float64(daemonLog.AllocatablePodsTotal) == 0 {
+		daemonLog.UtilizationFactorPodsTotal = 0
+	} else {
+		daemonLog.UtilizationFactorPodsTotal = float64(clusterInfo.ClusterUsedPods) / float64(daemonLog.AllocatablePodsTotal)
+	}
+	if float64(daemonLog.AllocatablePodsNminusone) == 0 {
+		daemonLog.UtilizationFactorPodsNminusone = 0
+	} else {
+		daemonLog.UtilizationFactorPodsNminusone = float64(clusterInfo.ClusterUsedPods) / float64(daemonLog.AllocatablePodsNminusone)
+	}
+	if float64(daemonLog.AllocatableMemoryTotal) == 0 {
+		daemonLog.UtilizationFactorMemoryRequestsTotal = 0
+	} else {
+		daemonLog.UtilizationFactorMemoryRequestsTotal = float64(daemonLog.ContainerResourceMemoryRequest) / float64(daemonLog.AllocatableMemoryTotal)
+	}
+	if float64(daemonLog.AllocatableMemoryNminusone) == 0 {
+		daemonLog.UtilizationFactorMemoryRequestsNminusone = 0
+	} else {
+		daemonLog.UtilizationFactorMemoryRequestsNminusone = float64(daemonLog.ContainerResourceMemoryRequest) / float64(daemonLog.AllocatableMemoryNminusone)
+	}
+	if float64(daemonLog.AllocatableCPUTotal) == 0 {
+		daemonLog.UtilizationFactorCPURequestsTotal = 0
+	} else {
+		daemonLog.UtilizationFactorCPURequestsTotal = float64(clusterInfo.ClusterUsedCPURequests.Value()) / float64(daemonLog.AllocatableCPUTotal)
+	}
+	if float64(daemonLog.AllocatableCPUNminusone) == 0 {
+		daemonLog.UtilizationFactorCPURequestsNminusone = 0
+	} else {
+		daemonLog.UtilizationFactorCPURequestsNminusone = float64(clusterInfo.ClusterUsedCPURequests.Value()) / float64(daemonLog.AllocatableCPUNminusone)
+	}
 	daemonLog.AvailableMemoryRequestTotal = daemonLog.AllocatableMemoryTotal - daemonLog.ContainerResourceMemoryRequest
 	daemonLog.AvailableMemoryRequestNminusone = daemonLog.AllocatableMemoryNminusone - daemonLog.ContainerResourceMemoryRequest
 	daemonLog.AvailableCPURequestTotal = daemonLog.AllocatableCPUTotal - daemonLog.ContainerResourceCPURequestCores
@@ -70,6 +118,7 @@ func runDaemonMode(clusterInfo ClusterInfo) {
 	result, err := json.Marshal(daemonLog)
 	if err != nil {
 		fmt.Printf("There was an error during json.Marshal, Error: %s\n", err)
+		panic(err)
 	}
 	fmt.Println(string(result))
 }
