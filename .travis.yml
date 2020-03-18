@@ -31,4 +31,4 @@ deploy:
     tags: true
     condition: "$TRAVIS_OS_NAME = linux"
 after_deploy:
-- "./build/after_deploy.sh"
+- "./after_deploy.sh"
