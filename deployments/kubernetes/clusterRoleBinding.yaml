@@ -1,13 +1,12 @@
-apiVersion: authorization.openshift.io/v1
-groupNames: null
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: k8scapcity
 roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
   name: k8scapcity
 subjects:
 - kind: ServiceAccount
   name: k8scapcity
   namespace: k8scapcity
-userNames:
-- system:serviceaccount:k8scapcity:k8scapcity
