@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: k8scapcity
-          image: 'hub.soh.re/k8scapcity:v0.2.1'
+          image: 'hub.soh.re/k8scapcity:v0.2.3'
           env:
           - name: NODELABEL
             value: node-role.kubernetes.io/compute=true
