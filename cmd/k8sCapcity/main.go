@@ -8,12 +8,10 @@ import (
 	"encoding/json"
 	"fmt"
 	log "github.com/sirupsen/logrus"
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-	metricsv1b1 "k8s.io/metrics/pkg/apis/metrics/v1beta1"
 	"time"
 )
 
@@ -28,36 +26,6 @@ func homeDir() string {
 		return h
 	}
 	return os.Getenv("USERPROFILE") // windows
-}
-
-func getNodeMetrics(clientset *kubernetes.Clientset) (nodeMetricList *metricsv1b1.NodeMetricsList) {
-	data, err := clientset.RESTClient().Get().AbsPath("apis/metrics.k8s.io/v1beta1/nodes").DoRaw()
-	if err != nil {
-		panic(err)
-	}
-	if err := json.Unmarshal(data, &nodeMetricList); err != nil {
-		panic(err)
-	}
-	return nodeMetricList
-}
-
-func getPodMetrics(clientset *kubernetes.Clientset) (podMetricList *metricsv1b1.PodMetricsList) {
-	data, err := clientset.RESTClient().Get().AbsPath("apis/metrics.k8s.io/v1beta1/pods").DoRaw()
-	if err != nil {
-		panic(err)
-	}
-	if err := json.Unmarshal(data, &podMetricList); err != nil {
-		panic(err)
-	}
-	return podMetricList
-}
-
-func getPodList(clientset *kubernetes.Clientset, nameSpace *string) (pods *corev1.PodList) {
-	pods, err := clientset.CoreV1().Pods(*nameSpace).List(metav1.ListOptions{})
-	if err != nil {
-		panic(err.Error())
-	}
-	return pods
 }
 
 func main() {
@@ -84,30 +52,18 @@ func main() {
 	if err != nil {
 		// no config, maybe we are inside a kubernetes cluster.
 		config, err = rest.InClusterConfig()
-		if err != nil {
-			panic(err.Error())
-		}
+		check(err)
 	}
 
 	// create the clientset
 	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		panic(err.Error())
-	}
+	check(err)
 
 	if *checkMode {
-		nodes, err := clientset.CoreV1().Nodes().List(metav1.ListOptions{})
-		if err != nil {
-			panic(err.Error())
-		}
-
-		if len(nodes.Items) > 0 {
-			fmt.Println("ok")
-			os.Exit(0)
-		} else {
-			fmt.Println("Unable to List nodes")
-			os.Exit(1)
-		}
+		_, err := clientset.CoreV1().Nodes().List(metav1.ListOptions{})
+		check(err)
+		fmt.Println("ok")
+		return
 	}
 
 	// BreakOut to namespace if asked
@@ -117,14 +73,13 @@ func main() {
 			result, err := json.Marshal(nsInfo)
 			check(err)
 			fmt.Println(string(result))
-			os.Exit(0)
-		} else {
-			output := namespaceHumanMode(nsInfo)
-			for _, line := range output {
-				fmt.Println(line)
-			}
-			os.Exit(0)
+			return
 		}
+		output := namespaceHumanMode(nsInfo)
+		for _, line := range output {
+			fmt.Println(line)
+		}
+		return
 	}
 
 	// Gather info

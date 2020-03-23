@@ -1,12 +1,22 @@
 package main
 
 import (
+	"encoding/json"
 	corev1 "k8s.io/api/core/v1"
 	resource "k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	metricsv1b1 "k8s.io/metrics/pkg/apis/metrics/v1beta1"
 	"strings"
 )
+
+func getNodeMetrics(clientset *kubernetes.Clientset) (nodeMetricList *metricsv1b1.NodeMetricsList) {
+	data, err := clientset.RESTClient().Get().AbsPath("apis/metrics.k8s.io/v1beta1/nodes").DoRaw()
+	check(err)
+	err = json.Unmarshal(data, &nodeMetricList)
+	check(err)
+	return nodeMetricList
+}
 
 func gatherInfo(clientset *kubernetes.Clientset, nodeLabel *string) (clusterInfo ClusterInfo) {
 	nodeInfo := make(map[string]NodeInfo)

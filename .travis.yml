@@ -3,6 +3,8 @@ addons:
   apt:
     packages:
     - rpm
+go:
+  - 1.13.x
 env:
   matrix:
   - GO111MODULE="on" GOLANGCI_LINT_VERSION=1.23.7
@@ -14,11 +16,12 @@ before_install:
 - GO111MODULE=off go get golang.org/x/tools/cmd/cover
 - GO111MODULE=off go get github.com/mattn/goveralls
 - curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
-- curl -Lo ./kind https://github.com/kubernetes-sigs/kind/releases/download/v0.7.0/kind-$(uname)-amd64 && chmod +x kind && sudo mv kind /usr/local/bin/
+- curl -H "Accept:application/octet-stream" -H "Authorization:token $GITHUB_TOKEN" -Lo ./kind https://api.github.com/repos/kubernetes-sigs/kind/releases/assets/17321765
+- chmod +x kind && sudo mv kind /usr/local/bin/
 - kind create cluster
 - mkdir -p $HOME/.kube && kind get kubeconfig > $HOME/.kube/config
 - kubectl create -f deployments/kubernetes/kind/kind-metrics-server.yaml
-- sleep 30
+- sleep 120
 - cd cmd/k8sCapcity/
 script:
 - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh |

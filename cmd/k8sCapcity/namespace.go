@@ -1,11 +1,28 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	corev1 "k8s.io/api/core/v1"
 	resource "k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	metricsv1b1 "k8s.io/metrics/pkg/apis/metrics/v1beta1"
 )
+
+func getPodMetrics(clientset *kubernetes.Clientset) (podMetricList *metricsv1b1.PodMetricsList) {
+	data, err := clientset.RESTClient().Get().AbsPath("apis/metrics.k8s.io/v1beta1/pods").DoRaw()
+	check(err)
+	err = json.Unmarshal(data, &podMetricList)
+	check(err)
+	return podMetricList
+}
+
+func getPodList(clientset *kubernetes.Clientset, nameSpace *string) (pods *corev1.PodList) {
+	pods, err := clientset.CoreV1().Pods(*nameSpace).List(metav1.ListOptions{})
+	check(err)
+	return pods
+}
 
 func gatherPodSpecInfo(pod corev1.Pod, nsInfo NamespaceInfo) NamespaceInfo {
 	for _, container := range pod.Spec.Containers {
