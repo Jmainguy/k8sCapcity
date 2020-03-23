@@ -13,6 +13,12 @@ before_install:
 - GO111MODULE=off go get golang.org/x/lint/golint
 - GO111MODULE=off go get golang.org/x/tools/cmd/cover
 - GO111MODULE=off go get github.com/mattn/goveralls
+- curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
+- curl -Lo ./kind https://github.com/kubernetes-sigs/kind/releases/download/v0.7.0/kind-$(uname)-amd64 && chmod +x kind && sudo mv kind /usr/local/bin/
+- kind create cluster
+- mkdir -p $HOME/.kube && kind get kubeconfig > $HOME/.kube/config
+- kubectl create -f deployments/kubernetes/kind/kind-metrics-server.yaml
+- sleep 30
 - cd cmd/k8sCapcity/
 script:
 - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh |
@@ -23,6 +29,7 @@ script:
 - $HOME/gopath/bin/goveralls -coverprofile=coverage.out -service=travis-ci -repotoken $COVERALLS_TOKEN
 - rm coverage.out
 - curl -X PURGE https://camo.githubusercontent.com/1a973e870b7a63366d40a4ac8da059d42e4a401a/68747470733a2f2f636f766572616c6c732e696f2f7265706f732f6769746875622f4a6d61696e6775792f6b3873436170636974792f62616467652e7376673f6272616e63683d6d617374657226736572766963653d676974687562
+- kubectl get nodes
 deploy:
 - provider: script
   skip_cleanup: true
