@@ -59,8 +59,8 @@ type ContainerInfo struct {
 	CPUUsedCores          float64 `json:"cpu_used.cores"`
 }
 
-// DaemonLog : Json to print out about metrics we gathered
-type DaemonLog struct {
+// Capcity : Json to print out about metrics we gathered
+type Capcity struct {
 	EventKind                                string             `json:"event.kind"`
 	EventModule                              string             `json:"event.module"`
 	EventProvider                            string             `json:"event.provider"`

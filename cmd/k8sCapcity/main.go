@@ -86,12 +86,12 @@ func main() {
 	if *daemonMode {
 		for {
 			clusterInfo := gatherInfo(clientset, nodeLabel)
-			runDaemonMode(clusterInfo)
+			getCapcity(clusterInfo)
 			time.Sleep(300 * time.Second)
 		}
 	} else if *jsonMode {
 		clusterInfo := gatherInfo(clientset, nodeLabel)
-		runDaemonMode(clusterInfo)
+		getCapcity(clusterInfo)
 
 	} else {
 		clusterInfo := gatherInfo(clientset, nodeLabel)

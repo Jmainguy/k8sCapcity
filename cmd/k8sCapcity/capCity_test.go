@@ -7,7 +7,7 @@ import (
 
 func TestDaemonModeEmpty(t *testing.T) {
 	clusterInfo := ClusterInfo{}
-	runDaemonMode(clusterInfo)
+	getCapcity(clusterInfo)
 }
 
 func TestDaemonModeValidClusterInfo(t *testing.T) {
@@ -39,5 +39,5 @@ func TestDaemonModeValidClusterInfo(t *testing.T) {
 			},
 		},
 	}
-	runDaemonMode(clusterInfo)
+	getCapcity(clusterInfo)
 }
