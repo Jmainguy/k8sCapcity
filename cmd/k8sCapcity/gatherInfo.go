@@ -35,21 +35,25 @@ func gatherInfo(clientset *kubernetes.Clientset, nodeLabel *string) (clusterInfo
 	if nodeLabelKey != "" {
 		clusterInfo.NodeLabel = nodeLabelKey
 		for _, v := range nodes.Items {
-			for label, value := range v.ObjectMeta.Labels {
-				if label == nodeLabelKey {
-					if value == nodeLabelValue {
-						node := nodeInfo[v.Name]
-						node.PrintOutput = true
-						nodeInfo[v.Name] = node
+			if !v.Spec.Unschedulable {
+				for label, value := range v.ObjectMeta.Labels {
+					if label == nodeLabelKey {
+						if value == nodeLabelValue {
+							node := nodeInfo[v.Name]
+							node.PrintOutput = true
+							nodeInfo[v.Name] = node
+						}
 					}
 				}
 			}
 		}
 	} else {
 		for _, v := range nodes.Items {
-			node := nodeInfo[v.Name]
-			node.PrintOutput = true
-			nodeInfo[v.Name] = node
+			if !v.Spec.Unschedulable {
+				node := nodeInfo[v.Name]
+				node.PrintOutput = true
+				nodeInfo[v.Name] = node
+			}
 		}
 	}
 
