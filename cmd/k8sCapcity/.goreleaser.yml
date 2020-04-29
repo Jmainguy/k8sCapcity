@@ -22,7 +22,7 @@ archives:
   - goos: windows
     format: zip
 nfpms:
-- name_template: "{{ .ProjectName }}-{{ .Version }}.{{ .Arch }}"
+- file_name_template: "{{ .ProjectName }}-{{ .Version }}.{{ .Arch }}"
   replacements:
     amd64: x86_64
   homepage:  https://soh.re
