@@ -54,10 +54,10 @@ func gatherNamespaceInfo(clientset *kubernetes.Clientset, nameSpace *string) Nam
 	podMetricList := getPodMetrics(clientset)
 	podList := getPodList(clientset, nameSpace)
 	nsInfo.NamespacePods = make(map[string]*Pod)
-	containerArray := make(map[string]ContainerInfo)
 	namespacePods := make(map[string]bool)
 	for _, metricPod := range podMetricList.Items {
 		if *nameSpace == metricPod.Namespace {
+			containerArray := make(map[string]ContainerInfo)
 			for _, container := range metricPod.Containers {
 				uniqueContainerName := fmt.Sprintf("%s-%s", metricPod.Name, container.Name)
 				c := &ContainerInfo{
