@@ -44,6 +44,7 @@ func main() {
 	}
 	nodeLabel := flag.String("nodelabel", "", "Label to match for nodes, if blank grab all nodes")
 	nameSpace := flag.String("namespace", "", "Namespace to grab capacity usage from")
+	namespaceList := flag.String("namespaceList", "", "Filepath containing a list of namespaces, one per line")
 	daemonMode := flag.Bool("daemon", false, "Run in daemon mode")
 	jsonMode := flag.Bool("json", false, "Output information in json format")
 	checkMode := flag.Bool("check", false, "Check kubernetes connection")
@@ -94,6 +95,41 @@ func main() {
 	} else if *jsonMode {
 		clusterInfo := gatherInfo(clientset, nodeLabel)
 		getCapcity(clusterInfo)
+
+	} else if *namespaceList != "" {
+		nsList := getNamespaceListFromFile(*namespaceList)
+		var totalMemoryRequests int64
+		var totalMemoryLimits int64
+		var totalMemoryUsed int64
+		var totalCPURequestsMilliCores int64
+		var totalCPULimitsMilliCores int64
+		var totalCPUUsedMilliCores int64
+		for _, namespace := range nsList {
+			fmt.Println("=========================")
+			nsInfo := gatherNamespaceInfo(clientset, &namespace)
+			fmt.Println(namespace)
+			fmt.Printf("NamespaceMemoryRequestsGib %v\n", toGibFromByte(nsInfo.NamespaceMemoryRequests))
+			totalMemoryRequests = totalMemoryRequests + nsInfo.NamespaceMemoryRequests
+			fmt.Printf("NamespaceMemoryLimitsGib %v\n", toGibFromByte(nsInfo.NamespaceMemoryLimits))
+			totalMemoryLimits = totalMemoryLimits + nsInfo.NamespaceMemoryLimits
+			fmt.Printf("NamespaceMemoryUsedGib %v\n", toGibFromByte(nsInfo.NamespaceMemoryUsed))
+			totalMemoryUsed = totalMemoryUsed + nsInfo.NamespaceMemoryUsed
+			fmt.Printf("NamespaceCPURequestsMilliCores %v\n", nsInfo.NamespaceCPURequestsMilliCores)
+			totalCPURequestsMilliCores = totalCPURequestsMilliCores + nsInfo.NamespaceCPURequestsMilliCores
+			fmt.Printf("NamespaceCPULimitsMilliCores %v\n", nsInfo.NamespaceCPULimitsMilliCores)
+			totalCPULimitsMilliCores = totalCPULimitsMilliCores + nsInfo.NamespaceCPULimitsMilliCores
+			fmt.Printf("NamespaceCPUUsedMilliCores %v\n", nsInfo.NamespaceCPUUsedMilliCores)
+			totalCPUUsedMilliCores = totalCPUUsedMilliCores + nsInfo.NamespaceCPUUsedMilliCores
+		}
+		fmt.Println("=========================")
+		fmt.Println("Total for all namespaces combined")
+		fmt.Printf("NamespaceMemoryRequestsGiB %v\n", toGibFromByte(totalMemoryRequests))
+		fmt.Printf("NamespaceMemoryLimitsGiB %v\n", toGibFromByte(totalMemoryLimits))
+		fmt.Printf("NamespaceMemoryUsedGiB %v\n", toGibFromByte(totalMemoryUsed))
+		fmt.Printf("NamespaceCPURequestsCores %v\n", float64(totalCPURequestsMilliCores)/1000)
+		fmt.Printf("NamespaceCPULimitsCores %v\n", float64(totalCPULimitsMilliCores)/1000)
+		fmt.Printf("NamespaceCPUUsedCores %v\n", float64(totalCPUUsedMilliCores)/1000)
+		fmt.Println("=========================")
 
 	} else {
 		clusterInfo := gatherInfo(clientset, nodeLabel)

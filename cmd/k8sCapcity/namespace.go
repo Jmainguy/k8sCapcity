@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	corev1 "k8s.io/api/core/v1"
@@ -8,6 +9,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	metricsv1b1 "k8s.io/metrics/pkg/apis/metrics/v1beta1"
+	"log"
+	"os"
 )
 
 func getPodMetrics(clientset *kubernetes.Clientset) (podMetricList *metricsv1b1.PodMetricsList) {
@@ -124,4 +127,23 @@ func namespaceHumanMode(nsInfo NamespaceInfo) (output []string) {
 	output = append(output, fmt.Sprintf("Namespace Total Memory Used: %dMiB (%.1fGiB)", toMibFromByte(nsInfo.NamespaceMemoryUsed), nsInfo.NamespaceMemoryUsedGiB))
 
 	return output
+}
+
+func getNamespaceListFromFile(namespaceList string) (namespaces []string) {
+	file, err := os.Open(namespaceList)
+
+	if err != nil {
+		log.Fatalf("failed to open")
+
+	}
+
+	scanner := bufio.NewScanner(file)
+	scanner.Split(bufio.ScanLines)
+
+	for scanner.Scan() {
+		namespaces = append(namespaces, scanner.Text())
+	}
+	file.Close()
+	return namespaces
+
 }
