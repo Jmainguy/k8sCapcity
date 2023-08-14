@@ -2,19 +2,21 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"fmt"
+	"log"
+	"os"
+
 	corev1 "k8s.io/api/core/v1"
 	resource "k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	metricsv1b1 "k8s.io/metrics/pkg/apis/metrics/v1beta1"
-	"log"
-	"os"
 )
 
 func getPodMetrics(clientset *kubernetes.Clientset) (podMetricList *metricsv1b1.PodMetricsList) {
-	data, err := clientset.RESTClient().Get().AbsPath("apis/metrics.k8s.io/v1beta1/pods").DoRaw()
+	data, err := clientset.RESTClient().Get().AbsPath("apis/metrics.k8s.io/v1beta1/pods").DoRaw(context.Background())
 	check(err)
 	err = json.Unmarshal(data, &podMetricList)
 	check(err)
@@ -22,7 +24,7 @@ func getPodMetrics(clientset *kubernetes.Clientset) (podMetricList *metricsv1b1.
 }
 
 func getPodList(clientset *kubernetes.Clientset, nameSpace *string) (pods *corev1.PodList) {
-	pods, err := clientset.CoreV1().Pods(*nameSpace).List(metav1.ListOptions{})
+	pods, err := clientset.CoreV1().Pods(*nameSpace).List(context.Background(), metav1.ListOptions{})
 	check(err)
 	return pods
 }

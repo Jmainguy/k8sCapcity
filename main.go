@@ -1,18 +1,21 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"os"
 	"path/filepath"
 
 	"encoding/json"
 	"fmt"
+	"time"
+
 	log "github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-	"time"
+
 	// Support gcp and other authentication schemes
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 )
@@ -63,7 +66,7 @@ func main() {
 	check(err)
 
 	if *checkMode {
-		_, err := clientset.CoreV1().Nodes().List(metav1.ListOptions{})
+		_, err := clientset.CoreV1().Nodes().List(context.Background(), metav1.ListOptions{})
 		check(err)
 		fmt.Println("ok")
 		return

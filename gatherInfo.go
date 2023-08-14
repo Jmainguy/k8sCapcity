@@ -1,17 +1,19 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
+	"strings"
+
 	corev1 "k8s.io/api/core/v1"
 	resource "k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	metricsv1b1 "k8s.io/metrics/pkg/apis/metrics/v1beta1"
-	"strings"
 )
 
 func getNodeMetrics(clientset *kubernetes.Clientset) (nodeMetricList *metricsv1b1.NodeMetricsList) {
-	data, err := clientset.RESTClient().Get().AbsPath("apis/metrics.k8s.io/v1beta1/nodes").DoRaw()
+	data, err := clientset.RESTClient().Get().AbsPath("apis/metrics.k8s.io/v1beta1/nodes").DoRaw(context.Background())
 	check(err)
 	err = json.Unmarshal(data, &nodeMetricList)
 	check(err)
@@ -28,7 +30,7 @@ func gatherInfo(clientset *kubernetes.Clientset, nodeLabel *string) (clusterInfo
 	}
 
 	// List all nodes
-	nodes, err := clientset.CoreV1().Nodes().List(metav1.ListOptions{})
+	nodes, err := clientset.CoreV1().Nodes().List(context.Background(), metav1.ListOptions{})
 	if err != nil {
 		panic(err.Error())
 	}
@@ -80,7 +82,7 @@ func gatherInfo(clientset *kubernetes.Clientset, nodeLabel *string) (clusterInfo
 	}
 
 	// List quotas
-	quotas, err := clientset.CoreV1().ResourceQuotas("").List(metav1.ListOptions{})
+	quotas, err := clientset.CoreV1().ResourceQuotas("").List(context.Background(), metav1.ListOptions{})
 	if err != nil {
 		panic(err.Error())
 	}
@@ -108,7 +110,7 @@ func gatherInfo(clientset *kubernetes.Clientset, nodeLabel *string) (clusterInfo
 		nodeInfo[metricNode.Name] = node
 	}
 
-	pods, err := clientset.CoreV1().Pods("").List(metav1.ListOptions{})
+	pods, err := clientset.CoreV1().Pods("").List(context.Background(), metav1.ListOptions{})
 	check(err)
 	for _, pod := range pods.Items {
 		node := nodeInfo[pod.Spec.NodeName]
