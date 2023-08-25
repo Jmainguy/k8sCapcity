@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.9](https://github.com/Jmainguy/k8sCapcity/compare/v0.2.8...v0.2.9) (2023-08-25)
+
+
+### Bug Fixes
+
+* **deps:** update kubernetes packages to v0.28.1 ([1b725af](https://github.com/Jmainguy/k8sCapcity/commit/1b725af6e71eb83029ab208471bae2382231bf57))
+
 ## [0.2.8](https://github.com/Jmainguy/k8sCapcity/compare/v0.2.7...v0.2.8) (2023-08-22)
 
 
