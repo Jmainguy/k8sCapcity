@@ -2,7 +2,7 @@ module github.com/jmainguy/k8sCapcity
 
 go 1.21
 
-toolchain go1.22.0
+toolchain go1.22.3
 
 require (
 	github.com/sirupsen/logrus v1.9.3
