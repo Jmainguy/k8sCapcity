@@ -100,31 +100,31 @@ func gatherNamespaceInfo(clientset *kubernetes.Clientset, nameSpace *string) Nam
 }
 
 func namespaceHumanMode(nsInfo NamespaceInfo) (output []string) {
-	output = append(output, fmt.Sprintf(""))
-	output = append(output, fmt.Sprintf("================"))
+	output = append(output, "")
+	output = append(output, "================")
 	for podName, pods := range nsInfo.NamespacePods {
 		output = append(output, fmt.Sprintf("****Pod Name: %s****", podName))
 		for _, container := range pods.Containers {
-			output = append(output, fmt.Sprintf("================"))
+			output = append(output, "================")
 			output = append(output, fmt.Sprintf("Container Name: %s", container.Name))
-			output = append(output, fmt.Sprintf("----------------"))
+			output = append(output, "----------------")
 			output = append(output, fmt.Sprintf("CPURequests: %v", container.CPURequestsCores))
 			output = append(output, fmt.Sprintf("MemoryRequests: %dMiB", toMibFromByte(container.MemoryRequests)))
 			output = append(output, fmt.Sprintf("CPULimits: %v", container.CPULimitsCores))
 			output = append(output, fmt.Sprintf("MemoryLimits: %dMiB", toMibFromByte(container.MemoryLimits)))
-			output = append(output, fmt.Sprintf("----------------"))
+			output = append(output, "----------------")
 			output = append(output, fmt.Sprintf("CPU Used: %dm", container.CPUUsedMilliCores))
 			output = append(output, fmt.Sprintf("Memory Used: %dMiB", toMibFromByte(container.MemoryUsed)))
-			output = append(output, fmt.Sprintf("================"))
+			output = append(output, "================")
 		}
 	}
 	output = append(output, fmt.Sprintf("<><><><><>Sum Total for Namespace: %s<><><><><>", nsInfo.Name))
-	output = append(output, fmt.Sprintf("----------------"))
+	output = append(output, "----------------")
 	output = append(output, fmt.Sprintf("Namespace Total CPURequests: %v", nsInfo.NamespaceCPURequestsCores))
 	output = append(output, fmt.Sprintf("Namespace Total MemoryRequests: %vMiB (%.1fGiB)", toMibFromByte(nsInfo.NamespaceMemoryRequests), nsInfo.NamespaceMemoryRequestsGiB))
 	output = append(output, fmt.Sprintf("Namespace Total CPULimits: %v", nsInfo.NamespaceCPULimitsCores))
 	output = append(output, fmt.Sprintf("Namespace Total MemoryLimits: %vMiB (%.1fGiB)", toMibFromByte(nsInfo.NamespaceMemoryLimits), nsInfo.NamespaceMemoryLimitsGiB))
-	output = append(output, fmt.Sprintf("----------------"))
+	output = append(output, "----------------")
 	output = append(output, fmt.Sprintf("Namespace Total CPU Used: %v", nsInfo.NamespaceCPUUsedCores))
 	output = append(output, fmt.Sprintf("Namespace Total Memory Used: %dMiB (%.1fGiB)", toMibFromByte(nsInfo.NamespaceMemoryUsed), nsInfo.NamespaceMemoryUsedGiB))
 
