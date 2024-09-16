@@ -1,0 +1,8 @@
+name: Call Reusable Golang CI Workflow
+
+on:
+  push:
+
+jobs:
+  golang-ci:
+    uses: Jmainguy/golang-workflows/.github/workflows/golang-ci.yml@v1.0.0

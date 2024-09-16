@@ -1,3 +1,4 @@
+version: 2
 project_name: k8scapcity
 env:
   - GO111MODULE=on
@@ -41,22 +42,6 @@ nfpms:
   formats:
   - deb
   - rpm
-
-brews:
-  - repository:
-      owner: jmainguy
-      name: homebrew-tap
-    folder: Formula
-    homepage: https://github.com/Jmainguy/k8scapcity
-    description: "Show k8s capacity"
-    license: "GPL-2.0"
-    commit_author:
-      name: Jonathan Mainguy
-      email: jon@soh.re
-    test: |
-      system "#{bin}/k8scapcity"
-    install: |
-      bin.install "k8scapcity"
 
 checksum:
   name_template: 'checksums.txt'
