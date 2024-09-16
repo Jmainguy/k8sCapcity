@@ -49,8 +49,8 @@ func humanMode(clusterInfo ClusterInfo) {
 			fmt.Printf("Used Memory Requests: %.1fGiB\n", toGib(node.UsedMemoryRequests))
 			fmt.Println("----------------")
 
-			AvailbleCPURequests := resource.Quantity{}
-			AvailableMemoryRequests := resource.Quantity{}
+			var AvailbleCPURequests resource.Quantity
+			var AvailableMemoryRequests resource.Quantity
 
 			AvailbleCPURequests = node.AllocatableCPU
 			AvailbleCPURequests.Sub(node.UsedCPURequests)
