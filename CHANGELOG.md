@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.14](https://github.com/Jmainguy/k8sCapcity/compare/v0.2.13...v0.2.14) (2024-11-02)
+
+
+### Bug Fixes
+
+* **deps:** update kubernetes packages to v0.31.2 ([32d6872](https://github.com/Jmainguy/k8sCapcity/commit/32d6872484ad690391a3862123ad32bddc000605))
+
 ## [0.2.13](https://github.com/Jmainguy/k8sCapcity/compare/v0.2.12...v0.2.13) (2024-09-16)
 
 
