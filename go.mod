@@ -4,10 +4,10 @@ go 1.23.1
 
 require (
 	github.com/sirupsen/logrus v1.9.3
-	k8s.io/api v0.32.0
-	k8s.io/apimachinery v0.32.0
-	k8s.io/client-go v0.32.0
-	k8s.io/metrics v0.32.0
+	k8s.io/api v0.34.0
+	k8s.io/apimachinery v0.34.0
+	k8s.io/client-go v0.34.0
+	k8s.io/metrics v0.34.0
 )
 
 require (
