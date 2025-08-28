@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.0](https://github.com/Jmainguy/k8sCapcity/compare/v0.2.16...v1.0.0) (2025-08-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* Release 1.0
+
+### Features
+
+* Release 1.0 ([fa3f357](https://github.com/Jmainguy/k8sCapcity/commit/fa3f3572bc42e4ea678c6e4dd63cc9418fe68c5c))
+
 ## [0.2.16](https://github.com/Jmainguy/k8sCapcity/compare/v0.2.15...v0.2.16) (2025-08-28)
 
 
