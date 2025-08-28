@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.16](https://github.com/Jmainguy/k8sCapcity/compare/v0.2.15...v0.2.16) (2025-08-28)
+
+
+### Bug Fixes
+
+* update dependencies to latest ([1d0395a](https://github.com/Jmainguy/k8sCapcity/commit/1d0395a3cdf95d95c8d251b9d32910d6b8814af3))
+
 ## [0.2.15](https://github.com/Jmainguy/k8sCapcity/compare/v0.2.14...v0.2.15) (2024-12-17)
 
 
