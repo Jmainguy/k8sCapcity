@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.0.2](https://github.com/Jmainguy/k8sCapcity/compare/v1.0.1...v1.0.2) (2026-03-30)
+
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([c812bec](https://github.com/Jmainguy/k8sCapcity/commit/c812becdda5abf216a1cb82071096c3f4520cdfc))
+* **deps:** update all non-major dependencies ([72e5388](https://github.com/Jmainguy/k8sCapcity/commit/72e5388d3caaf6a8650ba1fc87bf933d92d252aa))
+* **deps:** update all non-major dependencies to v0.34.2 ([b2d8104](https://github.com/Jmainguy/k8sCapcity/commit/b2d8104dae9d10a33f72aeac18dba9208eb40a1d))
+* **deps:** update all non-major dependencies to v0.34.2 ([a8c17d5](https://github.com/Jmainguy/k8sCapcity/commit/a8c17d549cec6c261b5b1bdcc2071c8333392ebf))
+
 ## [1.0.1](https://github.com/Jmainguy/k8sCapcity/compare/v1.0.0...v1.0.1) (2025-09-11)
 
 
