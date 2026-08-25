@@ -145,7 +145,9 @@ func getNamespaceListFromFile(namespaceList string) (namespaces []string) {
 	for scanner.Scan() {
 		namespaces = append(namespaces, scanner.Text())
 	}
-	file.Close()
+	if err := file.Close(); err != nil {
+		log.Printf("failed to close namespace list: %v", err)
+	}
 	return namespaces
 
 }
