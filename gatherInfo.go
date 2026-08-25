@@ -38,7 +38,7 @@ func gatherInfo(clientset *kubernetes.Clientset, nodeLabel *string) (clusterInfo
 		clusterInfo.NodeLabel = nodeLabelKey
 		for _, v := range nodes.Items {
 			if !v.Spec.Unschedulable {
-				for label, value := range v.ObjectMeta.Labels {
+				for label, value := range v.Labels {
 					if label == nodeLabelKey {
 						if value == nodeLabelValue {
 							node := nodeInfo[v.Name]
