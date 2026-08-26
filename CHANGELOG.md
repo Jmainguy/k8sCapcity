@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.3](https://github.com/Jmainguy/k8sCapcity/compare/v1.0.2...v1.0.3) (2026-08-26)
+
+
+### Bug Fixes
+
+* **deps:** update module github.com/sirupsen/logrus to v1.10.2 ([#82](https://github.com/Jmainguy/k8sCapcity/issues/82)) ([e1f0630](https://github.com/Jmainguy/k8sCapcity/commit/e1f06308a666ecd8a4f7208ca3dfe859e335c764))
+
 ## [1.0.2](https://github.com/Jmainguy/k8sCapcity/compare/v1.0.1...v1.0.2) (2026-03-30)
 
 
