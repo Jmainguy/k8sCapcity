@@ -6,7 +6,7 @@ require (
 	github.com/sirupsen/logrus v1.10.2
 	k8s.io/api v0.37.1
 	k8s.io/apimachinery v0.37.1
-	k8s.io/client-go v0.37.1
+	k8s.io/client-go v11.0.0+incompatible
 	k8s.io/metrics v0.37.1
 )
 
